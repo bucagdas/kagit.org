@@ -44,7 +44,7 @@ bucket_name = "kagit-pastes"  # bucket name of your R2 bucket
 DEPLOY_URL = "https://kagit.org"
 
 # url to repo, displayed in the index page
-REPO = "https://github.com/bucagdas/pastebin-worker"
+REPO = "https://github.com/bucagdas/kagit.org"
 
 # the page title displayed in index page
 INDEX_PAGE_TITLE = "Kağıt"

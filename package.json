@@ -3,7 +3,7 @@
   "name": "kagit",
   "version": "1.0.0",
   "description": "Kağıt — pastebin based on Cloudflare Workers, forked from pastebin-worker",
-  "repository": "https://github.com/bucagdas/pastebin-worker",
+  "repository": "https://github.com/bucagdas/kagit.org",
   "type": "module",
   "scripts": {
     "deploy": "wrangler deploy",

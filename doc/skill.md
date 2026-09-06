@@ -76,7 +76,7 @@ curl -X DELETE                   <manageUrl>
   HTTP `413 Payload Too Large` back, returned by the platform before the
   worker runs). Files larger than 100 MB therefore cannot be sent via a
   single `curl -Fc=@…` — use the web UI at `{{BASE_URL}}` or the `pb` CLI
-  (see [scripts/](https://github.com/bucagdas/pastebin-worker/tree/goshujin/scripts)),
+  (see [scripts/](https://github.com/bucagdas/kagit.org/tree/goshujin/scripts)),
   both of which split large files automatically.
 - Treat the service as ephemeral storage — do not rely on it for archival.
 

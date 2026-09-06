@@ -1,4 +1,4 @@
-import { decode, WorkerError, escapeHtml } from "../common.js"
+import { decode, WorkerError } from "../common.js"
 import { isLegalUrl } from "../../shared/verify.js"
 import { getDocMarkdown, getCurlIndexMarkdown, renderDocAsHtml } from "../pages/docs.js"
 import { renderRobotsTxt, renderSitemapXml, renderLlmsTxt } from "../pages/seo.js"
@@ -133,7 +133,6 @@ async function handleStaticPages(request: Request, env: Env, _: ExecutionContext
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>${escapeHtml(env.INDEX_PAGE_TITLE)}</title>
 ${renderSeoHeadTags(env, DEFAULT_LOCALE, { noIndex: isAdminUrl })}
 ${FONT_LINK_TAGS}
 ${renderCssLinks(cssPaths)}

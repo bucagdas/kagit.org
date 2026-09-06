@@ -151,44 +151,51 @@ export function PanelSettingsPanel({
   const { amount: expirationAmount, unit: expirationUnit } = splitExpiration(setting.expiration)
   const updateExpiration = (amount: string, unit: ExpirationUnit) =>
     onSettingChange({ ...setting, expiration: joinExpiration(amount, unit) })
+  const [expirationOk, expirationMessage] = verifyExpiration(setting.expiration, config, t)
   return (
     <Card aria-label={t.settings.ariaLabel} classNames={cardOverrides} {...rest}>
       <CardHeader className="text-2xl pl-4 pb-2">{t.settings.title}</CardHeader>
       <Divider className={tst} />
       <CardBody>
         <div className="gap-4 flex flex-row">
-          <div className="flex flex-row gap-1.5 shrink-0">
-            <Input
-              type="number"
-              label={t.settings.expiration}
-              classNames={{
-                base: "w-40",
-                label: "whitespace-nowrap",
-                ...inputOverrides,
-              }}
-              min={0}
-              step="any"
-              value={expirationAmount}
-              isRequired
-              onValueChange={(a) => updateExpiration(a, expirationUnit)}
-              isInvalid={!verifyExpiration(setting.expiration, config, t)[0]}
-              errorMessage={verifyExpiration(setting.expiration, config, t)[1]}
-              description={verifyExpiration(setting.expiration, config, t)[1]}
-            />
-            <Select
-              label={t.settings.expirationUnit}
-              className="w-28"
-              classNames={selectOverrides}
-              selectedKeys={[expirationUnit]}
-              onSelectionChange={(keys) => {
-                const newUnit = Array.from(keys)[0] as ExpirationUnit
-                updateExpiration(expirationAmount, newUnit)
-              }}
-            >
-              {EXPIRATION_UNITS.map((u) => (
-                <SelectItem key={u}>{expirationUnitLabel(t, u)}</SelectItem>
-              ))}
-            </Select>
+          <div className="flex flex-col gap-1.5 shrink-0">
+            <label className="pl-1 text-sm text-default-500 whitespace-nowrap">
+              {t.settings.expiration}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
+            <div className="flex flex-row gap-1.5">
+              <Input
+                type="number"
+                aria-label={t.settings.expiration}
+                classNames={{
+                  base: "w-20",
+                  ...inputOverrides,
+                }}
+                min={0}
+                step="any"
+                value={expirationAmount}
+                isRequired
+                onValueChange={(a) => updateExpiration(a, expirationUnit)}
+                isInvalid={!expirationOk}
+              />
+              <Select
+                aria-label={t.settings.expirationUnit}
+                className="w-28"
+                classNames={selectOverrides}
+                selectedKeys={[expirationUnit]}
+                onSelectionChange={(keys) => {
+                  const newUnit = Array.from(keys)[0] as ExpirationUnit
+                  updateExpiration(expirationAmount, newUnit)
+                }}
+              >
+                {EXPIRATION_UNITS.map((u) => (
+                  <SelectItem key={u}>{expirationUnitLabel(t, u)}</SelectItem>
+                ))}
+              </Select>
+            </div>
+            <div className={`pl-1 text-xs ${expirationOk ? "text-default-500" : "text-danger"}`}>
+              {expirationMessage}
+            </div>
           </div>
           <Input
             type="password"

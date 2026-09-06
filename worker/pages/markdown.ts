@@ -105,6 +105,15 @@ function sanitizeHtml(html: string): string {
 
 const descriptionLimit = 200
 const defaultTitle = "Untitled"
+
+// A raw slice() can land mid-word ("...shortening a U"); back up to the last space so a
+// truncated description still reads as a sentence fragment, with an ellipsis marking the cut.
+function truncateDescription(text: string, limit: number): string {
+  if (text.length <= limit) return text
+  const cut = text.slice(0, limit)
+  const lastSpace = cut.lastIndexOf(" ")
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`
+}
 const TOC_MIN_DEPTH = 2
 const TOC_MAX_DEPTH = 4
 const TOC_THRESHOLD = 3
@@ -139,17 +148,37 @@ function firstContentToken(tokens: Token[]): Token | undefined {
   return tokens.find((t) => t.type !== "space")
 }
 
-function extractMetadata(tokens: Token[], result: DocMetadata): void {
+// A meta description should read as prose, not as whatever token happens to come right after
+// the title — e.g. api.md's title is followed by a `## GET /` subheading, which used to become
+// the description verbatim ("GET /"). Skip headings (and anything else that isn't actual body
+// text) and use the first paragraph/blockquote/list instead.
+function isProseToken(t: Token): boolean {
+  return t.type === "paragraph" || t.type === "blockquote" || t.type === "list"
+}
+
+function descriptionText(t: Token): string {
+  // Markdown source line-wraps end up as literal newlines in tokenText's output; collapse them
+  // so the <meta description> attribute holds a single tidy line, matching how it'll actually
+  // be read by search engines and social previews.
+  return tokenText(t).replace(/\s+/g, " ").trim()
+}
+
+function extractMetadata(tokens: Token[], result: DocMetadata, descriptionOverride?: string): void {
   const first = firstContentToken(tokens)
   if (!first) return
+  let proseSearchSpace = tokens
   if (first.type === "heading" && (first as Tokens.Heading).depth === 1) {
     result.title = escapeHtml(tokenText(first))
-    const rest = tokens.slice(tokens.indexOf(first) + 1)
-    const second = firstContentToken(rest)
-    if (second) result.description = escapeHtml(tokenText(second).slice(0, descriptionLimit))
-  } else {
-    result.description = escapeHtml(tokenText(first).slice(0, descriptionLimit))
+    proseSearchSpace = tokens.slice(tokens.indexOf(first) + 1)
   }
+  if (descriptionOverride) {
+    result.description = escapeHtml(
+      truncateDescription(descriptionOverride.replace(/\s+/g, " ").trim(), descriptionLimit),
+    )
+    return
+  }
+  const prose = proseSearchSpace.find(isProseToken)
+  if (prose) result.description = escapeHtml(truncateDescription(descriptionText(prose), descriptionLimit))
 }
 
 function renderToc(toc: TocEntry[]): string {
@@ -302,7 +331,7 @@ const mathInlineExt = {
   },
 }
 
-export function makeMarkdown(content: string): string {
+export function makeMarkdown(content: string, canonicalUrl?: string, descriptionOverride?: string): string {
   const metadata: DocMetadata = { title: defaultTitle, description: "", toc: [] }
   const slugger = new GithubSlugger()
 
@@ -346,7 +375,7 @@ export function makeMarkdown(content: string): string {
   })
 
   const tokens = marked.lexer(content)
-  extractMetadata(tokens, metadata)
+  extractMetadata(tokens, metadata, descriptionOverride)
   const convertedHtml = sanitizeHtml(marked.parser(tokens))
 
   const tocHtml = renderToc(metadata.toc)
@@ -360,6 +389,7 @@ export function makeMarkdown(content: string): string {
   <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
   <title>${metadata.title}</title>
   ${metadata.description.length > 0 ? `<meta name='description' content='${metadata.description}'>` : ""}
+  ${canonicalUrl ? `<link rel='canonical' href='${escapeHtml(canonicalUrl)}'>` : ""}
   <link rel='stylesheet' href='https://pages.github.com/assets/css/style.css'>
   ${renderCssLinks(cssPaths)}
   <style>${sidebarStyles}</style>

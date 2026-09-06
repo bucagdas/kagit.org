@@ -35,6 +35,16 @@ export function getCurlIndexMarkdown(env: Env): string {
   return renderTemplate(indexMd, env)
 }
 
-export function renderDocAsHtml(md: string): string {
-  return makeMarkdown(md.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ""))
+const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/
+
+// doc/skill.md's frontmatter is the Claude Skill format (name/description) and is kept intact
+// in its raw .md response for that reason. Its `description` also happens to double as a good
+// HTML meta description — reuse it rather than falling back to whatever text follows the H1.
+function frontmatterDescription(md: string): string | undefined {
+  const description = /^description:\s*(.+)$/m.exec(FRONTMATTER_RE.exec(md)?.[1] ?? "")?.[1]
+  return description?.trim().replace(/^["']|["']$/g, "")
+}
+
+export function renderDocAsHtml(md: string, canonicalUrl?: string): string {
+  return makeMarkdown(md.replace(FRONTMATTER_RE, ""), canonicalUrl, frontmatterDescription(md))
 }

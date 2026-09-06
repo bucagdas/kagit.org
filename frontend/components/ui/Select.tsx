@@ -27,7 +27,17 @@ export interface SelectProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 
 }
 
 export const Select = React.forwardRef<SelectHandle, SelectProps>(function Select(
-  { label, size: _size = "md", selectedKeys = [], onSelectionChange, className, classNames = {}, children, ...rest },
+  {
+    label,
+    size: _size = "md",
+    selectedKeys = [],
+    onSelectionChange,
+    className,
+    classNames = {},
+    children,
+    "aria-label": ariaLabel,
+    ...rest
+  },
   forwardedRef,
 ) {
   const [isOpen, setIsOpen] = useState(false)
@@ -95,6 +105,7 @@ export const Select = React.forwardRef<SelectHandle, SelectProps>(function Selec
       <button
         ref={triggerRef}
         type="button"
+        aria-label={ariaLabel ?? label}
         onMouseDown={() => {
           focusFromMouseRef.current = true
         }}

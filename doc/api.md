@@ -1,3 +1,7 @@
+---
+description: Full HTTP API reference for kagit.org: upload, fetch, update, and delete pastes with curl or any HTTP client, plus encryption, burn-after-read, URL shortening, and metadata endpoints.
+---
+
 # HTTP API Reference
 
 ## GET `/`

@@ -87,6 +87,19 @@
   }
 }
 
+/* Every input in this design is custom-styled (rounded, bordered); the browser's native
+   number spinner ignores that border-radius and its square corners overrun it. Hidden in
+   favor of plain typed input, matching every other field's lack of native chrome. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 .line-number-rows {
   counter-reset: linenumber;
 }

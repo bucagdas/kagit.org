@@ -217,7 +217,6 @@ export function PasteBin({ config }: { config: Env }) {
           <DarkModeToggle modeSelection={modeSelection} setModeSelection={setModeSelection} />
         </div>
       </div>
-      <p className="my-2">{t.pasteBin.tagline}</p>
       <p className="my-2">
         <b>{t.pasteBin.usageLabel}</b>
         {": "}

@@ -180,7 +180,8 @@ ${DARK_MODE_SCRIPT}
     const docMd = getDocMarkdown(lookupPath, env)
     if (docMd !== null) {
       const wantsMarkdown = isExplicitMd || isCurl
-      return new Response(wantsMarkdown ? docMd : renderDocAsHtml(docMd), {
+      const canonicalUrl = `${env.DEPLOY_URL}${lookupPath.replace(/\.html$/, "")}`
+      return new Response(wantsMarkdown ? docMd : renderDocAsHtml(docMd, canonicalUrl), {
         headers: {
           "Content-Type": wantsMarkdown ? "text/plain;charset=UTF-8" : "text/html;charset=UTF-8",
           Vary: "User-Agent",

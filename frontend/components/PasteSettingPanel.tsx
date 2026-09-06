@@ -162,7 +162,8 @@ export function PanelSettingsPanel({
               type="number"
               label={t.settings.expiration}
               classNames={{
-                base: "w-24",
+                base: "w-40",
+                label: "whitespace-nowrap",
                 ...inputOverrides,
               }}
               min={0}
@@ -207,7 +208,7 @@ export function PanelSettingsPanel({
             onValueChange={(p) => onSettingChange({ ...setting, password: p })}
             isClearable
             classNames={{
-              base: "flex-1",
+              base: "flex-1 max-w-xs",
               ...inputOverrides,
             }}
             placeholder={t.settings.passwordPlaceholder}

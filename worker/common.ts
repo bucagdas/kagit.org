@@ -1,7 +1,12 @@
 import { CHAR_GEN } from "../shared/constants.js"
 
-export function decode(arrayBuffer: ArrayBuffer): string {
-  return new TextDecoder().decode(arrayBuffer)
+// Accepts a typed-array view (not just a plain ArrayBuffer) so callers can pass a stream
+// reader's Uint8Array chunk directly. That distinction matters: a chunk's own `.buffer` is
+// the underlying allocation, which can be larger than the chunk itself (byteOffset/byteLength
+// trim it down) — decoding `.buffer` instead of the view decodes trailing garbage past the
+// chunk's actual bytes too. TextDecoder respects a view's bounds; decode() now does the same.
+export function decode(data: ArrayBuffer | Uint8Array): string {
+  return new TextDecoder().decode(data)
 }
 
 export function btoa_utf8(value: string): string {

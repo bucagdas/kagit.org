@@ -128,7 +128,7 @@ export async function renderDisplayPage(
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
-    html += decode(value.buffer as ArrayBuffer)
+    html += decode(value)
   }
 
   const { jsFile, cssPaths } = getAssetPaths(manifest, "display.html")

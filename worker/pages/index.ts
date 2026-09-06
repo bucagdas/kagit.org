@@ -57,7 +57,7 @@ export async function renderIndexPage(
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
-    html += decode(value.buffer as ArrayBuffer)
+    html += decode(value)
   }
 
   // Get resource paths from manifest

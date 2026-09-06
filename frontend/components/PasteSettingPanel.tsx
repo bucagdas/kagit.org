@@ -1,15 +1,42 @@
 import type { CardProps } from "./ui/index.js"
-import { Card, CardBody, CardHeader, Divider, Input, Switch, Tooltip } from "./ui/index.js"
+import { Card, CardBody, CardHeader, Divider, Input, Select, SelectItem, Switch, Tooltip } from "./ui/index.js"
 import { verifyExpiration, verifyManageUrl } from "../utils/utils.js"
 import { verifyName, verifyPassword } from "../../shared/verify.js"
 import type { NameAvailability } from "../utils/useNameAvailability.js"
 import React from "react"
 import { CheckIcon, InfoIcon, QuestionMarkCircleIcon, SpinnerIcon, XIcon } from "./icons.js"
-import { cardOverrides, inputOverrides, switchOverrides, tst } from "../utils/overrides.js"
+import { cardOverrides, inputOverrides, selectOverrides, switchOverrides, tst } from "../utils/overrides.js"
 import { PASTE_NAME_LEN, PRIVATE_PASTE_NAME_LEN } from "../../shared/constants.js"
 import { useT } from "../i18n/LocaleContext.js"
 import { format } from "../i18n/interpolate.js"
 import type { Messages } from "../i18n/translations/en.js"
+
+type ExpirationUnit = "s" | "m" | "h" | "d"
+
+const EXPIRATION_UNITS: ExpirationUnit[] = ["s", "m", "h", "d"]
+
+function splitExpiration(expiration: string): { amount: string; unit: ExpirationUnit } {
+  const match = /^(\d+(?:\.\d+)?)\s*([smhd])?$/.exec(expiration.trim())
+  if (!match) return { amount: expiration, unit: "d" }
+  return { amount: match[1], unit: (match[2] as ExpirationUnit | undefined) ?? "s" }
+}
+
+function joinExpiration(amount: string, unit: ExpirationUnit): string {
+  return `${amount}${unit}`
+}
+
+function expirationUnitLabel(t: Messages, unit: ExpirationUnit): string {
+  switch (unit) {
+    case "s":
+      return t.duration.secondOther
+    case "m":
+      return t.duration.minuteOther
+    case "h":
+      return t.duration.hourOther
+    case "d":
+      return t.duration.dayOther
+  }
+}
 
 export type UploadKind = "short" | "long" | "custom" | "manage"
 
@@ -121,27 +148,47 @@ export function PanelSettingsPanel({
 }: PasteSettingPanelProps) {
   const t = useT()
   const urlKindOpts = urlKindOptions(t)
+  const { amount: expirationAmount, unit: expirationUnit } = splitExpiration(setting.expiration)
+  const updateExpiration = (amount: string, unit: ExpirationUnit) =>
+    onSettingChange({ ...setting, expiration: joinExpiration(amount, unit) })
   return (
     <Card aria-label={t.settings.ariaLabel} classNames={cardOverrides} {...rest}>
       <CardHeader className="text-2xl pl-4 pb-2">{t.settings.title}</CardHeader>
       <Divider className={tst} />
       <CardBody>
         <div className="gap-4 flex flex-row">
-          <Input
-            type="text"
-            label={t.settings.expiration}
-            classNames={{
-              base: "basis-40",
-              ...inputOverrides,
-            }}
-            defaultValue="7d"
-            value={setting.expiration}
-            isRequired
-            onValueChange={(e) => onSettingChange({ ...setting, expiration: e })}
-            isInvalid={!verifyExpiration(setting.expiration, config, t)[0]}
-            errorMessage={verifyExpiration(setting.expiration, config, t)[1]}
-            description={verifyExpiration(setting.expiration, config, t)[1]}
-          />
+          <div className="flex flex-row gap-1.5 shrink-0">
+            <Input
+              type="number"
+              label={t.settings.expiration}
+              classNames={{
+                base: "w-24",
+                ...inputOverrides,
+              }}
+              min={0}
+              step="any"
+              value={expirationAmount}
+              isRequired
+              onValueChange={(a) => updateExpiration(a, expirationUnit)}
+              isInvalid={!verifyExpiration(setting.expiration, config, t)[0]}
+              errorMessage={verifyExpiration(setting.expiration, config, t)[1]}
+              description={verifyExpiration(setting.expiration, config, t)[1]}
+            />
+            <Select
+              label={t.settings.expirationUnit}
+              className="w-28"
+              classNames={selectOverrides}
+              selectedKeys={[expirationUnit]}
+              onSelectionChange={(keys) => {
+                const newUnit = Array.from(keys)[0] as ExpirationUnit
+                updateExpiration(expirationAmount, newUnit)
+              }}
+            >
+              {EXPIRATION_UNITS.map((u) => (
+                <SelectItem key={u}>{expirationUnitLabel(t, u)}</SelectItem>
+              ))}
+            </Select>
+          </div>
           <Input
             type="password"
             label={t.settings.password}

@@ -65,6 +65,7 @@ export const en = {
     title: "Settings",
     ariaLabel: "Pastebin setting panel",
     expiration: "Expiration",
+    expirationUnit: "Unit",
     password: "Password",
     passwordHint: "Used to update/delete your paste. Randomly generated if left empty.",
     passwordHintAria: "More information about Password",

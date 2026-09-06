@@ -84,9 +84,10 @@ describe("Pastebin", () => {
   it("refuse illegal settings", async () => {
     renderWithLocale(<PasteBin config={__WRANGLER_CONFIG__} />)
     // due to bugs https://github.com/adobe/react-spectrum/discussions/8037, we need to use duplicated name here
-    const expire = screen.getByRole("textbox", { name: "Expiration" })
+    const expire = screen.getByRole("spinbutton", { name: "Expiration" })
     expect(expire).toBeValid()
-    await userEvent.type(expire, "xxx")
+    await userEvent.clear(expire)
+    await userEvent.type(expire, "9999") // days, exceeds the 90d test config max
     expect(expire).toBeInvalid()
   })
 })

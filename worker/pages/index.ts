@@ -7,7 +7,7 @@ import { resolveLocaleFromAcceptLanguage } from "../../shared/i18n/locales.js"
 import { decode, escapeHtml } from "../common.js"
 import manifest from "../../dist/frontend/.vite/ssr-manifest.json"
 import { PASSWD_SEP } from "../../shared/constants.js"
-import { getAssetPaths, renderCssLinks, DARK_MODE_SCRIPT, FONT_LINK_TAGS } from "../ssrUtils.js"
+import { getAssetPaths, renderCssLinks, renderSeoHeadTags, DARK_MODE_SCRIPT, FONT_LINK_TAGS } from "../ssrUtils.js"
 
 export async function renderIndexPage(
   env: Env,
@@ -71,6 +71,7 @@ export async function renderIndexPage(
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escapeHtml(env.INDEX_PAGE_TITLE)}</title>
+${renderSeoHeadTags(env, locale)}
 ${FONT_LINK_TAGS}
 ${renderCssLinks(cssPaths)}
 <script>

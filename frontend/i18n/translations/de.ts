@@ -38,8 +38,8 @@ export const de: Messages = {
     deletedTitle: "Erfolgreich gelöscht",
     deletedBody: "Es kann bis zu 60 Sekunden dauern, bis die Löschung überall wirksam ist",
     errorFetching: "Fehler beim Abrufen von {url}",
-    errorUploading: "Fehler beim Hochladen des Pastes",
-    errorDeleting: "Fehler beim Löschen des Pastes",
+    errorUploading: "Fehler beim Hochladen des Papiers",
+    errorDeleting: "Fehler beim Löschen des Papiers",
   },
 
   display: {
@@ -48,15 +48,15 @@ export const de: Messages = {
     invalidKeyTitle: "Ungültiger Entschlüsselungsschlüssel",
     decryptFailedTitle: "Entschlüsselung fehlgeschlagen",
     decryptFailedBody:
-      "Der Paste konnte mit dem angegebenen Schlüssel nicht entschlüsselt werden. Das URL-Fragment ist möglicherweise falsch, oder der Paste wurde ersetzt oder beschädigt.",
-    errorFetchingFailed: "Paste konnte nicht abgerufen werden",
+      "Das Papier konnte mit dem angegebenen Schlüssel nicht entschlüsselt werden. Das URL-Fragment ist möglicherweise falsch, oder das Papier wurde ersetzt oder beschädigt.",
+    errorFetchingFailed: "Papier konnte nicht abgerufen werden",
     errorFetching: "Fehler beim Abrufen von {url}",
     binaryNotice: "Diese Datei scheint binär oder nicht UTF-8-kodiert zu sein{encoding}.",
     binaryNoticeEncoding: " ({encoding} vermutet)",
     clickToShow: "(Zum Anzeigen klicken)",
     clickToHide: "(Zum Ausblenden klicken)",
     notRenderable: "Keine darstellbare Datei{contentType}.",
-    tooLarge: "Der Paste ist zu groß, um automatisch geladen zu werden.",
+    tooLarge: "Das Papier ist zu groß, um automatisch geladen zu werden.",
     downloadRaw: "Rohdaten herunterladen",
     orLoadAnyway: " oder trotzdem {loadAnyway}.",
     loadAnyway: "laden",
@@ -64,11 +64,12 @@ export const de: Messages = {
 
   settings: {
     title: "Einstellungen",
-    ariaLabel: "Pastebin-Einstellungsfeld",
+    ariaLabel: "Kağıt-Einstellungsfeld",
     expiration: "Ablauf",
+    expirationUnit: "Einheit",
     password: "Passwort",
     passwordHint:
-      "Wird zum Aktualisieren/Löschen deines Pastes verwendet. Wird zufällig generiert, wenn leer gelassen.",
+      "Wird zum Aktualisieren/Löschen deines Papiers verwendet. Wird zufällig generiert, wenn leer gelassen.",
     passwordHintAria: "Weitere Informationen zum Passwort",
     passwordPlaceholder: "Wird zufällig generiert",
     urlKindLabel: "URL-Art:",
@@ -80,7 +81,7 @@ export const de: Messages = {
     kindShortDesc: "Zufälliger {n}-stelliger Name",
     kindLongDesc: "Zufälliger {n}-stelliger Name",
     kindCustomDesc: "Eigenen Namen wählen (mit ~ vorangestellt)",
-    kindManageDesc: "Einen bestehenden Paste aktualisieren oder löschen",
+    kindManageDesc: "Ein bestehendes Papier aktualisieren oder löschen",
     checkingAvailability: "Verfügbarkeit wird geprüft…",
     nameAvailable: "Name verfügbar",
     nameTaken: "Name bereits vergeben",
@@ -92,29 +93,29 @@ export const de: Messages = {
     clientSideEncryption: "Clientseitige Verschlüsselung",
     encryptionTooltipTitle: "Clientseitige Verschlüsselung",
     encryptionTooltipBody1:
-      "Dein Paste wird über eine URL geteilt, die den Entschlüsselungsschlüssel im URL-Hash enthält, der niemals an den Server gesendet wird. Die Entschlüsselung erfolgt im Browser, sodass nur Personen mit dem Schlüssel (nicht der Server) den entschlüsselten Inhalt sehen können.",
+      "Dein Papier wird über eine URL geteilt, die den Entschlüsselungsschlüssel im URL-Hash enthält, der niemals an den Server gesendet wird. Die Entschlüsselung erfolgt im Browser, sodass nur Personen mit dem Schlüssel (nicht der Server) den entschlüsselten Inhalt sehen können.",
     encryptionTooltipBody2:
-      "Nur der Paste-Inhalt wird verschlüsselt. Der Dateiname und der abgeleitete MIME-Typ bleiben für den Server und jeden mit der URL sichtbar.",
+      "Nur der Papier-Inhalt wird verschlüsselt. Der Dateiname und der abgeleitete MIME-Typ bleiben für den Server und jeden mit der URL sichtbar.",
     encryptionHintAria: "Weitere Informationen zur clientseitigen Verschlüsselung",
     burnAfterRead: "Nach dem Lesen löschen",
     burnAfterReadTooltip:
-      "Der Paste wird unmittelbar nach dem ersten erfolgreichen Lesen dauerhaft gelöscht. Teile den Link nur einmal; ein erneutes Laden der Seite, Linkvorschauen oder ein von mehreren Personen geöffneter Link verbrauchen ihn.",
+      "Das Papier wird unmittelbar nach dem ersten erfolgreichen Lesen dauerhaft gelöscht. Teile den Link nur einmal; ein erneutes Laden der Seite, Linkvorschauen oder ein von mehreren Personen geöffneter Link verbrauchen ihn.",
     burnAfterReadHintAria: "Weitere Informationen zum Löschen nach dem Lesen",
   },
 
   uploaded: {
-    title: "Hochgeladener Paste",
+    title: "Hochgeladenes Papier",
     optionsLabel: "Optionen:",
     displayUrl: "Anzeige-URL",
     displayUrlDesc: "Browserfreundliche Ansicht mit Syntaxhervorhebung.",
     displayUrlEncryptedAddendum:
       " Der Entschlüsselungsschlüssel steht in der URL nach dem {hash} und wird niemals an den Server gesendet; er verbleibt im Browser zur clientseitigen Entschlüsselung.",
     markdownUrl: "Markdown-URL",
-    markdownUrlDesc: "Rendert den Paste als GitHub-flavored Markdown (mit Code-Hervorhebung und LaTeX).",
+    markdownUrlDesc: "Rendert das Papier als GitHub-flavored Markdown (mit Code-Hervorhebung und LaTeX).",
     rawUrl: "Roh-URL",
     rawUrlDescEncrypted:
-      "Gibt den rohen Paste-Inhalt zurück; verschlüsselt, da dieser Paste clientseitige Verschlüsselung verwendet. Entschlüssele ihn selbst mit dem Schlüssel.",
-    rawUrlDescPlain: "Gibt den rohen Paste-Inhalt direkt zurück, mit dem abgeleiteten Content-Type.",
+      "Gibt den rohen Papier-Inhalt zurück; verschlüsselt, da dieses Papier clientseitige Verschlüsselung verwendet. Entschlüssele ihn selbst mit dem Schlüssel.",
+    rawUrlDescPlain: "Gibt den rohen Papier-Inhalt direkt zurück, mit dem abgeleiteten Content-Type.",
     rawFlagMime: "Überschreibt den Content-Type",
     rawFlagAttachment: "Erzwingt den Download (Content-Disposition: attachment)",
     rawFlagExt: "Hängt eine Erweiterung an, um den MIME-Typ anzudeuten",
@@ -122,17 +123,18 @@ export const de: Messages = {
     displayFlagLang: "Überschreibt die Sprache der Syntaxhervorhebung",
     displayFlagFilename: "Hängt einen Dateinamen an; wird im Header angezeigt und als Download-Name verwendet",
     manageUrl: "Verwaltungs-URL",
-    manageUrlDesc: "Verwende diese URL, um den Paste später zu aktualisieren oder zu löschen. Geheim halten.",
+    manageUrlDesc: "Verwende diese URL, um das Papier später zu aktualisieren oder zu löschen. Geheim halten.",
     expiration: "Ablauf",
     uploadProgress: "{done} / {total} hochgeladen",
     cancel: "Abbrechen",
     more: "Mehr",
     shortenerUrl: "Kurz-URL",
-    shortenerUrlDesc: "Der Paste-Inhalt ist eine URL; dieser Endpunkt leitet (302) dorthin weiter.",
+    shortenerUrlDesc: "Der Papier-Inhalt ist eine URL; dieser Endpunkt leitet (302) dorthin weiter.",
     metadataUrl: "Metadaten-URL",
     metadataUrlDesc:
-      "Ruft die Paste-Metadaten (Größe, Zeitstempel, Dateiname, Verschlüsselungsschema, ...) als JSON ab.",
-    burnAfterReadNotice: "Dieser Paste wird nach dem ersten Lesen gelöscht. Der folgende Link funktioniert nur einmal.",
+      "Ruft die Papier-Metadaten (Größe, Zeitstempel, Dateiname, Verschlüsselungsschema, ...) als JSON ab.",
+    burnAfterReadNotice:
+      "Dieses Papier wird nach dem ersten Lesen gelöscht. Der folgende Link funktioniert nur einmal.",
   },
 
   validation: {
@@ -168,22 +170,22 @@ export const de: Messages = {
     indentWith: "Einrücken mit",
     tabLabel: "Tab: {width}",
     spacesLabel: "Leerzeichen: {width}",
-    pasteEditorAria: "Paste-Editor",
+    pasteEditorAria: "Papier-Editor",
     clearEditorAria: "Editor leeren",
   },
 
   uploader: {
     preparingTitle: "Fehler bei der Vorbereitung des Uploads",
     noFileSelected: "Keine Datei ausgewählt",
-    emptyPaste: "Leerer Paste",
+    emptyPaste: "Leeres Papier",
     uploadTitle: "Fehler beim Upload",
   },
 
   input: {
-    ariaLabel: "Pastebin-Editorfeld",
+    ariaLabel: "Kağıt-Editorfeld",
     tabEdit: "Bearbeiten",
     tabFile: "Datei",
-    editPlaceholder: "Hier deinen Paste eingeben",
+    editPlaceholder: "Hier dein Papier eingeben",
     dropHere: "Datei hier ablegen",
     releaseToUpload: "Loslassen, um als Datei hochzuladen",
     selectFile: "Datei auswählen",

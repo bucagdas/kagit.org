@@ -1,15 +1,17 @@
 import { decode, WorkerError, escapeHtml } from "../common.js"
 import { isLegalUrl } from "../../shared/verify.js"
 import { getDocMarkdown, getCurlIndexMarkdown, renderDocAsHtml } from "../pages/docs.js"
+import { renderRobotsTxt, renderSitemapXml, renderLlmsTxt } from "../pages/seo.js"
 import { verifyAuth } from "../pages/auth.js"
 import mime from "mime"
 import { makeMarkdown } from "../pages/markdown.js"
 import type { PasteMetadata, PasteWithMetadata } from "../storage/storage.js"
 import { getPaste, getPasteMetadata, metaResponseFromMetadata } from "../storage/storage.js"
 import { parsePath } from "../../shared/parsers.js"
-import { MAX_URL_REDIRECT_LEN } from "../../shared/constants.js"
+import { MAX_URL_REDIRECT_LEN, PASSWD_SEP } from "../../shared/constants.js"
+import { DEFAULT_LOCALE } from "../../shared/i18n/locales.js"
 import manifest from "../../dist/frontend/.vite/ssr-manifest.json"
-import { getAssetPaths, renderCssLinks, DARK_MODE_SCRIPT, FONT_LINK_TAGS } from "../ssrUtils.js"
+import { getAssetPaths, renderCssLinks, renderSeoHeadTags, DARK_MODE_SCRIPT, FONT_LINK_TAGS } from "../ssrUtils.js"
 
 type Headers = Record<string, string>
 
@@ -53,6 +55,22 @@ function isCurlAgent(request: Request): boolean {
 async function handleStaticPages(request: Request, env: Env, _: ExecutionContext): Promise<Response | null> {
   const url = new URL(request.url)
   const isCurl = isCurlAgent(request)
+
+  if (url.pathname === "/robots.txt") {
+    return new Response(renderRobotsTxt(env), {
+      headers: { "Content-Type": "text/plain;charset=UTF-8", ...staticPageCacheHeader(env) },
+    })
+  }
+  if (url.pathname === "/sitemap.xml") {
+    return new Response(renderSitemapXml(env), {
+      headers: { "Content-Type": "application/xml;charset=UTF-8", ...staticPageCacheHeader(env) },
+    })
+  }
+  if (url.pathname === "/llms.txt") {
+    return new Response(renderLlmsTxt(env), {
+      headers: { "Content-Type": "text/plain;charset=UTF-8", ...staticPageCacheHeader(env) },
+    })
+  }
 
   // Serve doc/index.md as plain markdown for curl on "/" or anyone on "/index.md"
   if ((url.pathname === "/" && isCurl) || url.pathname === "/index.md") {
@@ -106,6 +124,7 @@ async function handleStaticPages(request: Request, env: Env, _: ExecutionContext
 
     // CSR fallback: dynamically generate empty HTML shell
     const { jsFile, cssPaths } = getAssetPaths(manifest, "index.html")
+    const isAdminUrl = url.pathname.includes(PASSWD_SEP)
 
     return new Response(
       `<!doctype html>
@@ -115,6 +134,7 @@ async function handleStaticPages(request: Request, env: Env, _: ExecutionContext
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escapeHtml(env.INDEX_PAGE_TITLE)}</title>
+${renderSeoHeadTags(env, DEFAULT_LOCALE, { noIndex: isAdminUrl })}
 ${FONT_LINK_TAGS}
 ${renderCssLinks(cssPaths)}
 <script>

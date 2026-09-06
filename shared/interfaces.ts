@@ -11,6 +11,7 @@ export interface MetaResponse {
   filename?: string
   highlightLanguage?: string
   encryptionScheme?: string
+  burnAfterRead?: boolean
 }
 
 export interface PasteResponse extends MetaResponse {

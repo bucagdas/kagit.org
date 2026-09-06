@@ -2,12 +2,14 @@ import type { ButtonProps } from "./ui/index.js"
 import { Button } from "./ui/index.js"
 import { useRef, useState } from "react"
 import { CopyIcon, CheckIcon } from "./icons.js"
+import { useT } from "../i18n/LocaleContext.js"
 
 interface CopyIconProps extends ButtonProps {
   getCopyContent: () => string
 }
 
 export function CopyWidget({ className, getCopyContent, ...rest }: CopyIconProps) {
+  const t = useT()
   const numOfIssuedCopies = useRef(0)
   const [hasIssuedCopies, setHasIssuedCopies] = useState<boolean>(false)
   const onCopy = () => {
@@ -31,7 +33,7 @@ export function CopyWidget({ className, getCopyContent, ...rest }: CopyIconProps
       isIconOnly
       size="sm"
       variant="light"
-      aria-label="Copy"
+      aria-label={t.common.copy}
       className={`focus:ring-0 hover:bg-default-200 ${className}`}
       onPress={onCopy}
       {...rest}

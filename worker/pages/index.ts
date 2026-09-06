@@ -1,16 +1,24 @@
 import { renderToReadableStream } from "react-dom/server.edge"
 import React from "react"
 import { PasteBin } from "../../frontend/pages/PasteBin.js"
+import { LocaleProvider } from "../../frontend/i18n/LocaleContext.js"
+import { resolveLocaleFromAcceptLanguage } from "../../shared/i18n/locales.js"
 import { decode, escapeHtml } from "../common.js"
 import manifest from "../../dist/frontend/.vite/ssr-manifest.json"
 import { PASSWD_SEP } from "../../shared/constants.js"
-import { getAssetPaths, renderCssLinks, DARK_MODE_SCRIPT } from "../ssrUtils.js"
+import { getAssetPaths, renderCssLinks, DARK_MODE_SCRIPT, FONT_LINK_TAGS } from "../ssrUtils.js"
 
-export async function renderIndexPage(env: Env, pathname: string): Promise<string | null> {
+export async function renderIndexPage(
+  env: Env,
+  pathname: string,
+  acceptLanguage: string | null,
+): Promise<string | null> {
   // Admin URLs (containing password separator) skip SSR because they need client-side fetch
   if (pathname.includes(PASSWD_SEP)) {
     return null
   }
+
+  const locale = resolveLocaleFromAcceptLanguage(acceptLanguage)
 
   // Build React element
   const config: Env = {
@@ -21,7 +29,11 @@ export async function renderIndexPage(env: Env, pathname: string): Promise<strin
     INDEX_PAGE_TITLE: env.INDEX_PAGE_TITLE,
   } as Env
 
-  const reactElement = React.createElement(React.StrictMode, null, React.createElement(PasteBin, { config }))
+  const reactElement = React.createElement(
+    React.StrictMode,
+    null,
+    React.createElement(LocaleProvider, { initialLocale: locale, children: React.createElement(PasteBin, { config }) }),
+  )
 
   // Render to HTML stream
   const stream = await renderToReadableStream(reactElement)
@@ -38,12 +50,13 @@ export async function renderIndexPage(env: Env, pathname: string): Promise<strin
 
   // Generate complete HTML
   return `<!doctype html>
-<html lang="en">
+<html lang="${locale}">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="/favicon.ico" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escapeHtml(env.INDEX_PAGE_TITLE)}</title>
+${FONT_LINK_TAGS}
 ${renderCssLinks(cssPaths)}
 <script>
 ${DARK_MODE_SCRIPT}

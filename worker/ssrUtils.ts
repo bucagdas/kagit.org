@@ -19,6 +19,13 @@ export function renderCssLinks(cssPaths: readonly string[]): string {
   return cssPaths.map((p) => `<link rel="stylesheet" href="/${p}">`).join("")
 }
 
+// Karla is the brand's UI typeface (see frontend/style.css's --font-sans); load it explicitly
+// since "Karla" alone in a font-family list silently falls back to the system font in any
+// browser that doesn't happen to have it installed.
+export const FONT_LINK_TAGS = `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">`
+
 export const DARK_MODE_SCRIPT = `(function() {
   const stored = localStorage.getItem('darkModeSelect') || 'system';
   const isDark = stored === 'dark' || (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);

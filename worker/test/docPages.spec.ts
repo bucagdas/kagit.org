@@ -55,7 +55,7 @@ describe("doc pages", () => {
     expect(resp.status).toStrictEqual(200)
     expect(resp.headers.get("Content-Type")).toStrictEqual("text/plain;charset=UTF-8")
     const body = await resp.text()
-    expect(body.includes("# Pastebin Worker")).toStrictEqual(true)
+    expect(body.includes("# Kağıt")).toStrictEqual(true)
     expect(body.includes("{{BASE_URL}}")).toStrictEqual(false)
   })
 
@@ -72,7 +72,7 @@ describe("doc pages", () => {
     expect(resp.headers.get("Content-Type")).toStrictEqual("text/plain;charset=UTF-8")
     expect(resp.headers.get("Vary")).toStrictEqual("User-Agent")
     const body = await resp.text()
-    expect(body.includes("# Pastebin Worker"), "body should contain index heading").toStrictEqual(true)
+    expect(body.includes("# Kağıt"), "body should contain index heading").toStrictEqual(true)
     expect(body.includes("{{BASE_URL}}"), "template should be expanded").toStrictEqual(false)
   })
 

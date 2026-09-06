@@ -27,6 +27,7 @@ export interface UploadOptions {
   encryptionScheme?: EncryptionScheme
   expire?: string
   manageUrl?: string
+  burnAfterRead?: boolean
 }
 
 export const DEFAULT_MPU_CONCURRENCY = 8
@@ -133,6 +134,7 @@ export async function uploadNormal(
     encryptionScheme,
     expire,
     manageUrl,
+    burnAfterRead,
   }: UploadOptions,
   progressCallback?: (doneBytes: number, allBytes: number) => void,
   signal?: AbortSignal,
@@ -152,6 +154,7 @@ export async function uploadNormal(
   if (encryptionScheme !== undefined) fd.set("encryption-scheme", encryptionScheme)
   if (highlightLanguage !== undefined) fd.set("lang", highlightLanguage)
   if (isPrivate) fd.set("p", "1")
+  if (burnAfterRead) fd.set("b", "1")
 
   const resp = await xhrSend(isUpdate ? manageUrl! : apiUrl, {
     method: isUpdate ? "PUT" : "POST",
@@ -182,6 +185,7 @@ export async function uploadMPU(
     encryptionScheme,
     expire,
     manageUrl,
+    burnAfterRead,
   }: UploadOptions,
   progressCallback?: (doneBytes: number, allBytes: number) => void,
   concurrency: number = DEFAULT_MPU_CONCURRENCY,
@@ -300,6 +304,9 @@ export async function uploadMPU(
     }
     if (encryptionScheme !== undefined) {
       completeFormData.set("encryption-scheme", encryptionScheme)
+    }
+    if (burnAfterRead) {
+      completeFormData.set("b", "1")
     }
     const completeReqResp = await fetch(completeUrl, {
       method: isUpdate ? "PUT" : "POST",

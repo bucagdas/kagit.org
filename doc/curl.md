@@ -246,7 +246,7 @@ Deletion may take a few seconds to propagate globally.
   (HTTP `413 Payload Too Large` is returned before the request ever reaches
   the worker), regardless of the deployment's `R2_MAX_ALLOWED`. To upload
   larger files, use the web UI at `{{BASE_URL}}` or the
-  [`pb`](https://github.com/SharzyL/pastebin-worker/tree/goshujin/scripts)
+  [`pb`](https://github.com/bucagdas/pastebin-worker/tree/goshujin/scripts)
   CLI — both automatically switch to a multipart upload that streams 5 MiB
   chunks through the `/mpu/*` endpoints.
 

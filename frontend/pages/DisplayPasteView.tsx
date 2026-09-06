@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react"
 import { Button, CircularProgress, Link, Tooltip } from "../components/ui/index.js"
 import { DarkModeToggle, useDarkModeSelection } from "../components/DarkModeToggle.js"
+import { LanguageToggle } from "../components/LanguageToggle.js"
 import { DownloadIcon, HomeIcon } from "../components/icons.js"
 import { CopyWidget } from "../components/CopyWidget.js"
 import { tst } from "../utils/overrides.js"
 import { highlightHTML, useHljsForLang } from "../utils/highlight.js"
 import { formatSize } from "../utils/utils.js"
+import { useT } from "../i18n/LocaleContext.js"
+import { interpolate, format } from "../i18n/interpolate.js"
 
 interface PendingInfo {
   sizeBytes: number
@@ -96,6 +99,7 @@ export function DisplayPasteView(props: DisplayPasteViewProps) {
   } = props
 
   const indexPageTitle = config.INDEX_PAGE_TITLE || "Pastebin"
+  const t = useT()
 
   const [, modeSelection, setModeSelection] = useDarkModeSelection()
   const hljs = useHljsForLang(pasteLang)
@@ -123,9 +127,11 @@ export function DisplayPasteView(props: DisplayPasteViewProps) {
     <div className="absolute top-[50%] left-[50%] translate-[-50%] flex flex-col items-center w-full">
       <div className="text-foreground-600 mb-2">{`${pasteFile?.name} (${formatSize(pasteFile.size)})`}</div>
       <div className="w-fit text-center">
-        This file seems to be binary or not in UTF-8{guessedEncoding ? ` (${guessedEncoding} guessed). ` : ". "}
+        {format(t.display.binaryNotice, {
+          encoding: guessedEncoding ? format(t.display.binaryNoticeEncoding, { encoding: guessedEncoding }) : "",
+        })}{" "}
         <button className="text-primary-500 inline" onClick={() => setForceShowBinary(true)}>
-          (Click to show)
+          {t.display.clickToShow}
         </button>
       </div>
     </div>
@@ -142,9 +148,9 @@ export function DisplayPasteView(props: DisplayPasteViewProps) {
       !ct?.startsWith("audio/") &&
       !ct?.startsWith("video/")
     ) {
-      return `Not a renderable file${ct ? ` (${ct})` : ""}.`
+      return format(t.display.notRenderable, { contentType: ct ? ` (${ct})` : "" })
     }
-    return "Paste is too large to load automatically."
+    return t.display.tooLarge
   })()
   const pendingFileIndicator = pendingInfo && !pasteFile && (
     <div className="absolute top-[50%] left-[50%] translate-[-50%] flex flex-col items-center w-full px-4">
@@ -152,17 +158,16 @@ export function DisplayPasteView(props: DisplayPasteViewProps) {
       <div className="w-fit text-center">
         {placeholderReason}{" "}
         <Link href={`${pendingInfo.rawUrl}?a`} className="text-primary-500 inline">
-          Download raw
+          {t.display.downloadRaw}
         </Link>
-        {onLoadAnyway && (
-          <>
-            {" or "}
-            <button className="text-primary inline cursor-pointer" onClick={() => onLoadAnyway()}>
-              load anyway
-            </button>
-            .
-          </>
-        )}
+        {onLoadAnyway &&
+          interpolate(t.display.orLoadAnyway, {
+            loadAnyway: (
+              <button className="text-primary inline cursor-pointer" onClick={() => onLoadAnyway()}>
+                {t.display.loadAnyway}
+              </button>
+            ),
+          })}
       </div>
     </div>
   )
@@ -194,19 +199,24 @@ export function DisplayPasteView(props: DisplayPasteViewProps) {
               </>
             )}
             <span className="ml-1 shrink-0">
-              {isDecrypted === "decrypted" ? " (Decrypted)" : isDecrypted === "encrypted" ? " (Encrypted)" : ""}
+              {isDecrypted === "decrypted"
+                ? t.display.decrypted
+                : isDecrypted === "encrypted"
+                  ? t.display.encrypted
+                  : ""}
             </span>
           </h1>
           <div className="flex flex-row gap-2 items-center">
+            <LanguageToggle />
             <DarkModeToggle modeSelection={modeSelection} setModeSelection={setModeSelection} />
             {showFileContent && (
-              <Tooltip content={`Copy to clipboard`}>
+              <Tooltip content={t.common.copyToClipboard}>
                 <CopyWidget variant="light" className={buttonClasses} getCopyContent={() => pasteStringContent!} />
               </Tooltip>
             )}
             {pasteFile ? (
-              <Tooltip content={`Download as file`}>
-                <Button aria-label="Download" isIconOnly variant="light" className={buttonClasses}>
+              <Tooltip content={t.common.downloadAsFile}>
+                <Button aria-label={t.common.download} isIconOnly variant="light" className={buttonClasses}>
                   <a href={downloadUrl} download={pasteFile.name}>
                     <DownloadIcon className="size-6 inline" />
                   </a>
@@ -214,8 +224,8 @@ export function DisplayPasteView(props: DisplayPasteViewProps) {
               </Tooltip>
             ) : (
               (pendingInfo || mediaInfo) && (
-                <Tooltip content={`Download as file`}>
-                  <Button aria-label="Download" isIconOnly variant="light" className={buttonClasses}>
+                <Tooltip content={t.common.downloadAsFile}>
+                  <Button aria-label={t.common.download} isIconOnly variant="light" className={buttonClasses}>
                     <a href={(pendingInfo ?? mediaInfo)!.rawUrl} download={placeholderName}>
                       <DownloadIcon className="size-6 inline" />
                     </a>
@@ -229,7 +239,7 @@ export function DisplayPasteView(props: DisplayPasteViewProps) {
           <div className={`w-full bg-default-100 rounded-lg p-3 relative ${tst}`}>
             {isLoading ? (
               <div className="h-[10em] flex items-center justify-center">
-                <CircularProgress label={"Loading..."} />
+                <CircularProgress label={t.common.loading} />
               </div>
             ) : mediaInfo && !pasteFile && mediaInfoKind ? (
               <div>
@@ -259,7 +269,7 @@ export function DisplayPasteView(props: DisplayPasteViewProps) {
                         <span>{`(${formatSize(pasteFile.size)})`}</span>
                         {forceShowBinary && (
                           <button className="ml-2 text-primary-500" onClick={() => setForceShowBinary(false)}>
-                            (Click to hide)
+                            {t.display.clickToHide}
                           </button>
                         )}
                         {pasteLang && <span className={"grow text-right"}>{pasteLang}</span>}

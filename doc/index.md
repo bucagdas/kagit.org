@@ -1,4 +1,4 @@
-# Pastebin Worker
+# Kağıt
 
 A pastebin running on Cloudflare Workers. Visit {{BASE_URL}} in a browser for the full UI, or use
 `curl` from the terminal.

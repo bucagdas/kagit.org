@@ -21,6 +21,7 @@ export interface PasteMetadata {
   filename?: string
   highlightLanguage?: string
   encryptionScheme?: string
+  burnAfterRead?: boolean
 }
 
 interface PasteMetadataInStorage {
@@ -37,6 +38,7 @@ interface PasteMetadataInStorage {
   filename?: string
   highlightLanguage?: string
   encryptionScheme?: string
+  burnAfterRead?: boolean
 }
 
 export function metaResponseFromMetadata(metadata: PasteMetadata): MetaResponse {
@@ -49,6 +51,7 @@ export function metaResponseFromMetadata(metadata: PasteMetadata): MetaResponse 
     filename: metadata.filename,
     highlightLanguage: metadata.highlightLanguage,
     encryptionScheme: metadata.encryptionScheme,
+    burnAfterRead: metadata.burnAfterRead,
   }
 }
 
@@ -67,6 +70,7 @@ function migratePasteMetadata(original: PasteMetadataInStorage): PasteMetadata {
     filename: original.filename,
     highlightLanguage: original.highlightLanguage,
     encryptionScheme: original.encryptionScheme,
+    burnAfterRead: original.burnAfterRead,
   }
 }
 
@@ -94,7 +98,17 @@ async function updateAccessCounter(env: Env, short: string, value: ArrayBuffer, 
   }
 }
 
-export async function getPaste(env: Env, short: string, ctx: ExecutionContext): Promise<PasteWithMetadata | null> {
+// `consumesBurnAfterRead` must be true only for a request that actually delivers the paste
+// content to a reader (a real GET, not a metadata-only or HEAD request) — see handleRead.ts's
+// `shouldGetPasteContent`/`isHead` computation. The delete-on-burn and the (1%-sampled)
+// access-counter bump share one ctx.waitUntil task specifically so they can't race each other:
+// the counter's `env.PB.put` must never run after — and so resurrect — a burned paste's delete.
+export async function getPaste(
+  env: Env,
+  short: string,
+  ctx: ExecutionContext,
+  consumesBurnAfterRead: boolean,
+): Promise<PasteWithMetadata | null> {
   const item = await env.PB.getWithMetadata<PasteMetadataInStorage>(short, {
     type: "arrayBuffer",
   })
@@ -109,6 +123,10 @@ export async function getPaste(env: Env, short: string, ctx: ExecutionContext): 
     ctx.waitUntil(
       (async () => {
         if (expired) {
+          await deletePaste(env, short, metadata)
+          return null
+        }
+        if (metadata.burnAfterRead && consumesBurnAfterRead) {
           await deletePaste(env, short, metadata)
           return null
         }
@@ -158,6 +176,7 @@ interface WriteOptions {
   filename?: string
   highlightLanguage?: string
   encryptionScheme?: string
+  burnAfterRead?: boolean
   isMPUComplete: boolean
 }
 
@@ -197,6 +216,7 @@ export async function updatePaste(
     accessCounter: originalMetadata.accessCounter,
     sizeBytes: options.contentLength,
     encryptionScheme: options.encryptionScheme,
+    burnAfterRead: options.burnAfterRead,
   }
 
   await env.PB.put(pasteName, newLocation === "R2" ? "" : content, {
@@ -238,6 +258,7 @@ export async function createPaste(
     accessCounter: 0,
     sizeBytes: options.contentLength,
     encryptionScheme: options.encryptionScheme,
+    burnAfterRead: options.burnAfterRead,
   }
 
   await env.PB.put(pasteName, location === "R2" ? "" : content, {

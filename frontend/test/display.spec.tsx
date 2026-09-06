@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterEach, afterAll, vi } from "vitest"
-import { cleanup, render, screen, waitFor } from "@testing-library/react"
+import { cleanup, screen, waitFor } from "@testing-library/react"
 import { DisplayPaste } from "../pages/DisplayPaste.js"
 
 import "@testing-library/jest-dom/vitest"
@@ -7,7 +7,7 @@ import { userEvent } from "@testing-library/user-event"
 import { setupServer } from "msw/node"
 import { http, HttpResponse } from "msw"
 import { encodeKey, encrypt, genKey } from "../utils/encryption.js"
-import { stubBrowerFunctions, unStubBrowerFunctions } from "./testUtils.js"
+import { stubBrowerFunctions, unStubBrowerFunctions, renderWithLocale } from "./testUtils.js"
 import { MAX_AUTO_FETCH_BYTES } from "../../shared/constants.js"
 import type { SerializedPasteData } from "../../shared/interfaces.js"
 
@@ -54,7 +54,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const article = await screen.findByRole("article")
     expect(article.textContent).toStrictEqual(text)
@@ -81,7 +81,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const img = await screen.findByRole("img")
     expect(img.getAttribute("src")).toStrictEqual("/abcd")
@@ -103,7 +103,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const audio = await screen.findByLabelText("abcd")
     expect(audio.tagName.toLowerCase()).toStrictEqual("audio")
@@ -131,7 +131,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const video = await screen.findByLabelText("clip.mp4")
     expect(video.tagName.toLowerCase()).toStrictEqual("video")
@@ -158,7 +158,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL(`https://example.com/d/abcd#${await encodeKey(key)}`))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const audio = await screen.findByLabelText("song.mp3")
     expect(audio.tagName.toLowerCase()).toStrictEqual("audio")
@@ -183,7 +183,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL(`https://example.com/d/abcd#${await encodeKey(key)}`))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const img = await screen.findByRole("img")
     await waitFor(() => expect(img.getAttribute("src")).toStrictEqual("blob:mock"))
@@ -207,7 +207,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL(`https://example.com/d/abcd#${await encodeKey(key)}`))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const article = await screen.findByRole("article")
     expect(article.textContent).toStrictEqual(text)
@@ -232,7 +232,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     expect(await screen.findByText("load anyway")).toBeInTheDocument()
     expect(screen.getByText("Download raw")).toBeInTheDocument()
@@ -254,7 +254,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const heading = await screen.findByRole("heading")
     expect(heading.textContent).toContain(filename)
@@ -280,7 +280,7 @@ describe("DisplayPaste", () => {
     window.__PASTE_DATA__ = injected
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const article = await screen.findByRole("article")
     expect(article.textContent).toStrictEqual(text)
@@ -298,7 +298,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const loadAnyway = await screen.findByText("load anyway")
     await userEvent.click(loadAnyway)
@@ -325,7 +325,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL(`https://example.com/d/abcd#${await encodeKey(key)}`))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     const video = await screen.findByLabelText("clip.mp4")
     expect(video.tagName.toLowerCase()).toStrictEqual("video")
@@ -348,7 +348,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     expect(await screen.findByText("load anyway")).toBeInTheDocument()
     expect(getCalled).toStrictEqual(false)
@@ -363,7 +363,7 @@ describe("DisplayPaste", () => {
     )
     vi.stubGlobal("location", new URL("https://example.com/d/abcd"))
 
-    render(<DisplayPaste config={__WRANGLER_CONFIG__} />)
+    renderWithLocale(<DisplayPaste config={__WRANGLER_CONFIG__} />)
 
     expect(await screen.findByText(/Not a renderable file/)).toBeInTheDocument()
     expect(screen.getByText("Download raw")).toBeInTheDocument()

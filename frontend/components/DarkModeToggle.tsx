@@ -5,6 +5,8 @@ import { Button, Tooltip } from "./ui/index.js"
 
 import { ComputerIcon, MoonIcon, SunIcon } from "./icons.js"
 import { tst } from "../utils/overrides.js"
+import { useT } from "../i18n/LocaleContext.js"
+import { format } from "../i18n/interpolate.js"
 
 const modeSelections = ["system", "light", "dark"]
 type ModeSelection = (typeof modeSelections)[number]
@@ -20,9 +22,12 @@ export function useDarkModeSelection(): [
   React.Dispatch<React.SetStateAction<ModeSelection | undefined>>,
 ] {
   const [modeSelection, setModeSelection] = useState<ModeSelection | undefined>(() => {
-    if (typeof window === "undefined") return "system"
-    const item = localStorage.getItem("darkModeSelect")
-    if (item && modeSelections.includes(item)) return item
+    try {
+      const item = localStorage.getItem("darkModeSelect")
+      if (item && modeSelections.includes(item)) return item
+    } catch {
+      // localStorage can be unavailable (private browsing, sandboxed iframe, some test envs)
+    }
     return "system"
   })
 
@@ -42,7 +47,11 @@ export function useDarkModeSelection(): [
 
   useEffect(() => {
     if (modeSelection) {
-      localStorage.setItem("darkModeSelect", modeSelection)
+      try {
+        localStorage.setItem("darkModeSelect", modeSelection)
+      } catch {
+        // ignore
+      }
     }
   }, [modeSelection])
 
@@ -68,12 +77,18 @@ interface MyComponentProps extends ButtonProps {
 
 export function DarkModeToggle({ modeSelection, setModeSelection, className, ...rest }: MyComponentProps) {
   const [mounted, setMounted] = useState(false)
+  const t = useT()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   const currentMode = modeSelection || "system"
+  const modeLabels: Record<ModeSelection, string> = {
+    system: t.common.modeSystem,
+    light: t.common.modeLight,
+    dark: t.common.modeDark,
+  }
 
   if (!mounted) {
     return (
@@ -82,7 +97,7 @@ export function DarkModeToggle({ modeSelection, setModeSelection, className, ...
         size="sm"
         variant="light"
         className={`${tst}` + " " + className}
-        aria-label="Toggle dark mode"
+        aria-label={t.common.toggleDarkModeAria}
         style={{ visibility: "hidden" }}
         {...rest}
       >
@@ -92,13 +107,13 @@ export function DarkModeToggle({ modeSelection, setModeSelection, className, ...
   }
 
   return (
-    <Tooltip content={`Toggle dark mode (currently ${currentMode} mode)`}>
+    <Tooltip content={format(t.common.toggleDarkMode, { mode: modeLabels[currentMode] })}>
       <Button
         isIconOnly
         size="sm"
         variant="light"
         className={`${tst}` + " " + className}
-        aria-label="Toggle dark mode"
+        aria-label={t.common.toggleDarkModeAria}
         onPress={() => {
           const newSelected = modeSelections[(modeSelections.indexOf(currentMode) + 1) % modeSelections.length]
           setModeSelection(newSelected)

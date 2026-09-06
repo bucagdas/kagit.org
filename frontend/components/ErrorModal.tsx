@@ -2,6 +2,7 @@ import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from
 import type { ModalProps } from "./ui/index.js"
 import { useState } from "react"
 import { ErrorWithTitle } from "../utils/errors.js"
+import { useT } from "../i18n/LocaleContext.js"
 
 export interface ErrorState {
   title: string
@@ -12,6 +13,7 @@ export interface ErrorState {
 type ErrorModalProps = Partial<Omit<ModalProps, "children" | "isOpen" | "onClose">>
 
 export function useErrorModal() {
+  const t = useT()
   const [errorState, setErrorState] = useState<ErrorState>({ isOpen: false, content: "", title: "" })
 
   function showModal(title: string, content: string) {
@@ -19,7 +21,7 @@ export function useErrorModal() {
   }
 
   async function handleFailedResp(defaultTitle: string, resp: Response) {
-    const statusText = resp.statusText === "error" ? "Unknown error" : resp.statusText
+    const statusText = resp.statusText === "error" ? t.common.unknownError : resp.statusText
     const errText = (await resp.text()) || statusText
     showModal(defaultTitle, errText)
   }
@@ -46,7 +48,7 @@ export function useErrorModal() {
           </ModalBody>
           <ModalFooter>
             <Button variant="solid" onPress={onClose}>
-              Close
+              {t.common.close}
             </Button>
           </ModalFooter>
         </ModalContent>

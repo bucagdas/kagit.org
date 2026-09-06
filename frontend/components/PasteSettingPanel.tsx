@@ -7,6 +7,9 @@ import React from "react"
 import { CheckIcon, InfoIcon, QuestionMarkCircleIcon, SpinnerIcon, XIcon } from "./icons.js"
 import { cardOverrides, inputOverrides, switchOverrides, tst } from "../utils/overrides.js"
 import { PASTE_NAME_LEN, PRIVATE_PASTE_NAME_LEN } from "../../shared/constants.js"
+import { useT } from "../i18n/LocaleContext.js"
+import { format } from "../i18n/interpolate.js"
+import type { Messages } from "../i18n/translations/en.js"
 
 export type UploadKind = "short" | "long" | "custom" | "manage"
 
@@ -18,6 +21,7 @@ export interface PasteSetting {
   manageUrl: string
 
   doEncrypt: boolean
+  burnAfterRead: boolean
 }
 
 interface PasteSettingPanelProps extends CardProps {
@@ -28,23 +32,25 @@ interface PasteSettingPanelProps extends CardProps {
   footer?: React.ReactNode
 }
 
-const URL_KIND_OPTIONS: { value: UploadKind; label: string }[] = [
-  { value: "short", label: "short" },
-  { value: "long", label: "long" },
-  { value: "custom", label: "custom" },
-  { value: "manage", label: "manage" },
-]
+function urlKindOptions(t: Messages): { value: UploadKind; label: string }[] {
+  return [
+    { value: "short", label: t.settings.kindShort },
+    { value: "long", label: t.settings.kindLong },
+    { value: "custom", label: t.settings.kindCustom },
+    { value: "manage", label: t.settings.kindManage },
+  ]
+}
 
-function urlKindDescription(kind: UploadKind): string {
+function urlKindDescription(t: Messages, kind: UploadKind): string {
   switch (kind) {
     case "short":
-      return `Random ${PASTE_NAME_LEN}-character name`
+      return format(t.settings.kindShortDesc, { n: PASTE_NAME_LEN })
     case "long":
-      return `Random ${PRIVATE_PASTE_NAME_LEN}-character name`
+      return format(t.settings.kindLongDesc, { n: PRIVATE_PASTE_NAME_LEN })
     case "custom":
-      return "Pick your own name (prefixed with ~)"
+      return t.settings.kindCustomDesc
     case "manage":
-      return "Update or delete an existing paste"
+      return t.settings.kindManageDesc
   }
 }
 
@@ -70,7 +76,7 @@ interface CustomNameUI {
   endContent: React.ReactNode
 }
 
-function customNameUI(name: string, availability: NameAvailability): CustomNameUI {
+function customNameUI(t: Messages, name: string, availability: NameAvailability): CustomNameUI {
   const [ok, msg] = verifyName(name)
   if (!ok) return { isInvalid: true, errorMessage: msg, endContent: null }
 
@@ -79,26 +85,28 @@ function customNameUI(name: string, availability: NameAvailability): CustomNameU
     case "checking":
       return {
         isInvalid: false,
-        description: "Checking availability…",
-        endContent: <SpinnerIcon className="size-4 text-default-400" aria-label="Checking availability" />,
+        description: t.settings.checkingAvailability,
+        endContent: <SpinnerIcon className="size-4 text-default-400" aria-label={t.settings.checkingAvailability} />,
       }
     case "available":
       return {
         isInvalid: false,
-        successMessage: "Name available",
-        endContent: <CheckIcon className="size-4 text-success" aria-label="Name available" />,
+        successMessage: t.settings.nameAvailable,
+        endContent: <CheckIcon className="size-4 text-success" aria-label={t.settings.nameAvailableAria} />,
       }
     case "taken":
       return {
         isInvalid: true,
-        errorMessage: "Name already taken",
-        endContent: <XIcon className="size-4 text-danger" aria-label="Name taken" />,
+        errorMessage: t.settings.nameTaken,
+        endContent: <XIcon className="size-4 text-danger" aria-label={t.settings.nameTakenAria} />,
       }
     case "error":
       return {
         isInvalid: false,
-        warningMessage: `Could not check availability: ${availability.message}`,
-        endContent: <QuestionMarkCircleIcon className="size-4 text-yellow-600" aria-label="Availability unknown" />,
+        warningMessage: format(t.settings.availabilityUnknown, { message: availability.message }),
+        endContent: (
+          <QuestionMarkCircleIcon className="size-4 text-yellow-600" aria-label={t.settings.availabilityUnknownAria} />
+        ),
       }
   }
 }
@@ -111,15 +119,17 @@ export function PanelSettingsPanel({
   footer,
   ...rest
 }: PasteSettingPanelProps) {
+  const t = useT()
+  const urlKindOpts = urlKindOptions(t)
   return (
-    <Card aria-label="Pastebin setting panel" classNames={cardOverrides} {...rest}>
-      <CardHeader className="text-2xl pl-4 pb-2">Settings</CardHeader>
+    <Card aria-label={t.settings.ariaLabel} classNames={cardOverrides} {...rest}>
+      <CardHeader className="text-2xl pl-4 pb-2">{t.settings.title}</CardHeader>
       <Divider className={tst} />
       <CardBody>
         <div className="gap-4 flex flex-row">
           <Input
             type="text"
-            label="Expiration"
+            label={t.settings.expiration}
             classNames={{
               base: "basis-40",
               ...inputOverrides,
@@ -134,18 +144,12 @@ export function PanelSettingsPanel({
           />
           <Input
             type="password"
-            label="Password"
+            label={t.settings.password}
             labelExtra={
-              <Tooltip
-                content={
-                  <div className="px-1 py-1 text-small max-w-[18rem]">
-                    Used to update/delete your paste. Randomly generated if left empty.
-                  </div>
-                }
-              >
+              <Tooltip content={<div className="px-1 py-1 text-small max-w-[18rem]">{t.settings.passwordHint}</div>}>
                 <button
                   type="button"
-                  aria-label="More information about Password"
+                  aria-label={t.settings.passwordHintAria}
                   className="inline-flex items-center ml-1 text-default-400 hover:text-default-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-default-400 rounded"
                 >
                   <InfoIcon className="size-3" />
@@ -159,7 +163,7 @@ export function PanelSettingsPanel({
               base: "flex-1",
               ...inputOverrides,
             }}
-            placeholder={"Generated randomly"}
+            placeholder={t.settings.passwordPlaceholder}
             isInvalid={!verifyPassword(setting.password)[0]}
             errorMessage={verifyPassword(setting.password)[1]}
           />
@@ -167,22 +171,22 @@ export function PanelSettingsPanel({
         <Divider className={`my-4 ${tst}`} />
         <div className="pl-1">
           <div className="flex flex-row items-center flex-wrap gap-x-2 gap-y-2 text-sm">
-            <span className="text-default-700">Use</span>
+            <span className="text-default-700">{t.settings.use}</span>
             <div
               role="radiogroup"
               aria-label="URL kind"
               className="inline-flex rounded-lg border border-default-200 bg-default-100"
             >
-              {URL_KIND_OPTIONS.map((opt, idx) => {
+              {urlKindOpts.map((opt, idx) => {
                 const selected = setting.uploadKind === opt.value
                 const isFirst = idx === 0
-                const isLast = idx === URL_KIND_OPTIONS.length - 1
+                const isLast = idx === urlKindOpts.length - 1
                 return (
                   <Tooltip
                     key={opt.value}
                     content={
                       <div className="px-1 py-1 text-small max-w-[22rem]">
-                        <div>{urlKindDescription(opt.value)}</div>
+                        <div>{urlKindDescription(t, opt.value)}</div>
                         {urlKindExample(opt.value, config.DEPLOY_URL) && (
                           <div className="mt-1 font-mono text-xs opacity-80 break-all">
                             e.g. {urlKindExample(opt.value, config.DEPLOY_URL)}
@@ -209,12 +213,12 @@ export function PanelSettingsPanel({
                 )
               })}
             </div>
-            <span className="text-default-700">URL</span>
+            <span className="text-default-700">{t.settings.url}</span>
           </div>
 
           {setting.uploadKind === "custom" &&
             (() => {
-              const ui = customNameUI(setting.name, nameAvailability)
+              const ui = customNameUI(t, setting.name, nameAvailability)
               return (
                 <Input
                   value={setting.name}
@@ -243,7 +247,7 @@ export function PanelSettingsPanel({
               className="mt-2"
               isInvalid={!verifyManageUrl(setting.manageUrl, config)[0]}
               errorMessage={verifyManageUrl(setting.manageUrl, config)[1]}
-              placeholder="Manage URL"
+              placeholder={t.settings.manageUrlPlaceholder}
             />
           )}
         </div>
@@ -254,27 +258,40 @@ export function PanelSettingsPanel({
             isSelected={setting.doEncrypt}
             onValueChange={(v) => onSettingChange({ ...setting, doEncrypt: v })}
           >
-            Client-side encryption
+            {t.settings.clientSideEncryption}
           </Switch>
           <Tooltip
             content={
               <div className="px-1 py-2 max-w-[20rem]">
-                <h3 className="text-normal font-bold mb-2">Client-side encryption</h3>
-                <div className="text-small">
-                  Your paste is shared via a URL containing the decryption key in the URL hash, which is never sent to
-                  the server. Decryption happens in the browser, so only those with the key (not the server) can view
-                  the decrypted content.
-                </div>
-                <div className="text-small mt-2 text-yellow-600">
-                  Only the paste content is encrypted. The filename and its inferred mime type remain visible to the
-                  server and anyone with the URL.
-                </div>
+                <h3 className="text-normal font-bold mb-2">{t.settings.encryptionTooltipTitle}</h3>
+                <div className="text-small">{t.settings.encryptionTooltipBody1}</div>
+                <div className="text-small mt-2 text-yellow-600">{t.settings.encryptionTooltipBody2}</div>
               </div>
             }
           >
             <button
               type="button"
-              aria-label="More information about client-side encryption"
+              aria-label={t.settings.encryptionHintAria}
+              className="inline-flex items-center ml-2 text-default-500 hover:text-default-700 focus:outline-none focus-visible:ring-1 focus-visible:ring-default-400 rounded"
+            >
+              <InfoIcon className="size-3.5" />
+            </button>
+          </Tooltip>
+        </div>
+        <div className="pl-1 flex flex-row items-center mt-3">
+          <Switch
+            classNames={switchOverrides}
+            isSelected={setting.burnAfterRead}
+            onValueChange={(v) => onSettingChange({ ...setting, burnAfterRead: v })}
+          >
+            {t.settings.burnAfterRead}
+          </Switch>
+          <Tooltip
+            content={<div className="px-1 py-1 text-small max-w-[20rem]">{t.settings.burnAfterReadTooltip}</div>}
+          >
+            <button
+              type="button"
+              aria-label={t.settings.burnAfterReadHintAria}
               className="inline-flex items-center ml-2 text-default-500 hover:text-default-700 focus:outline-none focus-visible:ring-1 focus-visible:ring-default-400 rounded"
             >
               <InfoIcon className="size-3.5" />

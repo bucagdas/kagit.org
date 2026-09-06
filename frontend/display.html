@@ -2,9 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>%INDEX_PAGE_TITLE% / {{PASTE_NAME}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
     <script>
       ;(function () {
         const stored = localStorage.getItem("darkModeSelect") || "system"
@@ -13,8 +19,8 @@
         const root = document.documentElement
         root.classList.add(isDark ? "dark" : "light")
         root.style.colorScheme = isDark ? "dark" : "light"
-        root.style.setProperty("background-color", isDark ? "#000" : "#fff")
-        root.style.setProperty("color", isDark ? "#fff" : "#000")
+        root.style.setProperty("background-color", isDark ? "#1e1b16" : "#e8e3d8")
+        root.style.setProperty("color", isDark ? "#ede6d6" : "#2c2a24")
       })()
     </script>
   </head>

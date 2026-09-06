@@ -20,6 +20,9 @@ import type { UploadProgress } from "../utils/uploader.js"
 import { formatSize } from "../utils/utils.js"
 import { CopyWidget } from "./CopyWidget.js"
 import { ChevronDownIcon, InfoIcon } from "./icons.js"
+import { useT } from "../i18n/LocaleContext.js"
+import { interpolate, format } from "../i18n/interpolate.js"
+import type { Messages } from "../i18n/translations/en.js"
 
 interface UploadedPanelProps extends CardProps {
   isLoading: boolean
@@ -42,24 +45,29 @@ function makeDecryptionUrl(url: string, key?: string): string {
   return key ? `${base}#${key}` : base
 }
 
-const RAW_URL_FLAGS: { syntax: string; desc: string }[] = [
-  { syntax: "?mime=…", desc: "Override the Content-Type" },
-  { syntax: "?a", desc: "Force download (Content-Disposition: attachment)" },
-  { syntax: ".png", desc: "Append an extension to hint MIME type" },
-  { syntax: "/foo.txt", desc: "Append a filename for the downloaded file" },
-]
+function rawUrlFlags(t: Messages): { syntax: string; desc: string }[] {
+  return [
+    { syntax: "?mime=…", desc: t.uploaded.rawFlagMime },
+    { syntax: "?a", desc: t.uploaded.rawFlagAttachment },
+    { syntax: ".png", desc: t.uploaded.rawFlagExt },
+    { syntax: "/foo.txt", desc: t.uploaded.rawFlagFilename },
+  ]
+}
 
-const DISPLAY_URL_FLAGS: { syntax: string; desc: string }[] = [
-  { syntax: "?lang=js", desc: "Override syntax highlighting language" },
-  { syntax: "/foo.txt", desc: "Append a filename — shown in the header and used as the download name" },
-]
+function displayUrlFlags(t: Messages): { syntax: string; desc: string }[] {
+  return [
+    { syntax: "?lang=js", desc: t.uploaded.displayFlagLang },
+    { syntax: "/foo.txt", desc: t.uploaded.displayFlagFilename },
+  ]
+}
 
 function InfoTooltip({ children }: { children: React.ReactNode }) {
+  const t = useT()
   return (
     <Tooltip content={<div className="px-1 py-1 text-small max-w-[22rem]">{children}</div>}>
       <button
         type="button"
-        aria-label="More information"
+        aria-label={t.common.moreInformation}
         className="inline-flex items-center ml-1 text-default-400 hover:text-default-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-default-400 rounded"
       >
         <InfoIcon className="size-3" />
@@ -69,12 +77,13 @@ function InfoTooltip({ children }: { children: React.ReactNode }) {
 }
 
 function UrlTooltip({ desc, flags }: { desc?: React.ReactNode; flags?: { syntax: string; desc: string }[] }) {
+  const t = useT()
   return (
     <InfoTooltip>
       {desc && <div className={flags ? "mb-2" : ""}>{desc}</div>}
       {flags && (
         <>
-          <div className="font-medium mb-1">Options:</div>
+          <div className="font-medium mb-1">{t.uploaded.optionsLabel}</div>
           <div className="flex flex-col gap-1">
             {flags.map((f) => (
               <div key={f.syntax} className="flex flex-row gap-2 items-baseline">
@@ -100,6 +109,7 @@ export function UploadedPanel({
   isUrlPaste,
   ...rest
 }: UploadedPanelProps) {
+  const t = useT()
   const copyWidgetClassNames = `${tst}`
   const inputProps = {
     readOnly: true,
@@ -122,30 +132,38 @@ export function UploadedPanel({
 
   const markdownUrlField = (pasteResponse: PasteResponse) =>
     urlInput(
-      "Markdown URL",
+      t.uploaded.markdownUrl,
       withPathPrefix(pasteResponse.url, "/a"),
-      <InfoTooltip>Render the paste as GitHub-flavored markdown (with code highlighting and LaTeX).</InfoTooltip>,
+      <InfoTooltip>{t.uploaded.markdownUrlDesc}</InfoTooltip>,
     )
 
   return (
     <Card classNames={mergeClasses({ base: tst }, { base: className })} {...rest}>
-      <CardHeader className="text-2xl pl-4 pb-2">Uploaded Paste</CardHeader>
+      <CardHeader className="text-2xl pl-4 pb-2">{t.uploaded.title}</CardHeader>
       <Divider />
       <CardBody>
+        {pasteResponse?.burnAfterRead && !isLoading && (
+          <div className="mb-3 px-3 py-2 rounded-lg bg-warning-50 text-warning-700 text-sm">
+            {t.uploaded.burnAfterReadNotice}
+          </div>
+        )}
         {isLoading ? (
           <div className="w-full flex flex-col items-center justify-center gap-2 py-4">
             <CircularProgress
-              aria-label={"Loading..."}
+              aria-label={t.common.loading}
               value={loadingProgress ? (100 * loadingProgress.doneBytes) / Math.max(loadingProgress.totalBytes, 1) : 50}
             />
             {loadingProgress && (
               <span className="text-sm text-foreground-500 tabular-nums">
-                Uploaded {formatSize(loadingProgress.doneBytes)} / {formatSize(loadingProgress.totalBytes)}
+                {format(t.uploaded.uploadProgress, {
+                  done: formatSize(loadingProgress.doneBytes),
+                  total: formatSize(loadingProgress.totalBytes),
+                })}
               </span>
             )}
             {onCancel && (
               <Button size="sm" variant="ghost" onPress={onCancel} className="mt-1">
-                Cancel
+                {t.uploaded.cancel}
               </Button>
             )}
           </div>
@@ -154,22 +172,19 @@ export function UploadedPanel({
             <>
               <Input
                 {...inputProps}
-                label={"Display URL"}
+                label={t.uploaded.displayUrl}
                 labelExtra={
                   <UrlTooltip
                     desc={
                       <>
-                        Browser-friendly view with syntax highlighting.
-                        {encryptionKey && (
-                          <>
-                            {" "}
-                            The decryption key sits after the <code className="font-mono">#</code> in the URL and is
-                            never sent to the server — it stays in the browser for client-side decryption.
-                          </>
-                        )}
+                        {t.uploaded.displayUrlDesc}
+                        {encryptionKey &&
+                          interpolate(t.uploaded.displayUrlEncryptedAddendum, {
+                            hash: <code className="font-mono">#</code>,
+                          })}
                       </>
                     }
-                    flags={DISPLAY_URL_FLAGS}
+                    flags={displayUrlFlags(t)}
                   />
                 }
                 color={encryptionKey ? "success" : "default"}
@@ -184,23 +199,23 @@ export function UploadedPanel({
               />
               {isMarkdown && !isEncrypted && markdownUrlField(pasteResponse)}
               {urlInput(
-                "Raw URL",
+                t.uploaded.rawUrl,
                 pasteResponse.url,
                 <UrlTooltip
-                  desc={
-                    encryptionKey
-                      ? "Returns the raw paste content — encrypted, since this paste uses client-side encryption. Decrypt it yourself with the key."
-                      : "Returns the raw paste content directly, with the inferred Content-Type."
-                  }
-                  flags={RAW_URL_FLAGS}
+                  desc={encryptionKey ? t.uploaded.rawUrlDescEncrypted : t.uploaded.rawUrlDescPlain}
+                  flags={rawUrlFlags(t)}
                 />,
               )}
               {urlInput(
-                "Manage URL",
+                t.uploaded.manageUrl,
                 pasteResponse.manageUrl,
-                <InfoTooltip>Use this URL to update or delete the paste later. Keep it private.</InfoTooltip>,
+                <InfoTooltip>{t.uploaded.manageUrlDesc}</InfoTooltip>,
               )}
-              <Input {...inputProps} label={"Expiration"} value={new Date(pasteResponse.expireAt).toLocaleString()} />
+              <Input
+                {...inputProps}
+                label={t.uploaded.expiration}
+                value={new Date(pasteResponse.expireAt).toLocaleString()}
+              />
 
               <button
                 type="button"
@@ -213,7 +228,7 @@ export function UploadedPanel({
                 }
               >
                 <ChevronDownIcon aria-hidden="true" className={`w-4 h-4 ${tst} ${moreOpen ? "" : "-rotate-90"}`} />
-                <span>More</span>
+                <span>{t.uploaded.more}</span>
               </button>
 
               {moreOpen && (
@@ -222,16 +237,14 @@ export function UploadedPanel({
                   {!isEncrypted &&
                     isUrlPaste &&
                     urlInput(
-                      "Shortener URL",
+                      t.uploaded.shortenerUrl,
                       withPathPrefix(pasteResponse.url, "/u"),
-                      <InfoTooltip>The paste body is a URL — this endpoint redirects (302) to it.</InfoTooltip>,
+                      <InfoTooltip>{t.uploaded.shortenerUrlDesc}</InfoTooltip>,
                     )}
                   {urlInput(
-                    "Metadata URL",
+                    t.uploaded.metadataUrl,
                     withPathPrefix(pasteResponse.url, "/m"),
-                    <InfoTooltip>
-                      Get paste metadata (size, timestamps, filename, encryption scheme, ...) as JSON.
-                    </InfoTooltip>,
+                    <InfoTooltip>{t.uploaded.metadataUrlDesc}</InfoTooltip>,
                   )}
                 </div>
               )}

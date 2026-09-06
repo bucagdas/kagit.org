@@ -6,6 +6,7 @@ import type { EncryptionScheme } from "./encryption.js"
 import { encodeKey, encrypt, genKey } from "./encryption.js"
 import type { UploadOptions } from "../../shared/uploadPaste.js"
 import { UploadError, uploadMPU, uploadNormal } from "../../shared/uploadPaste.js"
+import type { Messages } from "../i18n/translations/en.js"
 
 async function genAndEncrypt(scheme: EncryptionScheme, content: string | Uint8Array) {
   const key = await genKey(scheme)
@@ -25,6 +26,7 @@ export interface UploadProgress {
 }
 
 export async function uploadPaste(
+  t: Messages,
   pasteSetting: PasteSetting,
   editorState: PasteEditState,
   onEncryptionKeyChange: (k: string | undefined) => void, // we only generate key on upload, so need a callback of key generation
@@ -35,7 +37,7 @@ export async function uploadPaste(
   async function constructContent(): Promise<File> {
     if (editorState.editKind === "file") {
       if (editorState.file === null) {
-        throw new ErrorWithTitle("Error on Preparing Upload", "No file selected")
+        throw new ErrorWithTitle(t.uploader.preparingTitle, t.uploader.noFileSelected)
       }
       if (pasteSetting.doEncrypt) {
         const { key, ciphertext } = await genAndEncrypt(encryptionScheme, await editorState.file.bytes())
@@ -48,7 +50,7 @@ export async function uploadPaste(
       }
     } else {
       if (editorState.editContent.length === 0) {
-        throw new ErrorWithTitle("Error on Preparing Upload", "Empty paste")
+        throw new ErrorWithTitle(t.uploader.preparingTitle, t.uploader.emptyPaste)
       }
       if (pasteSetting.doEncrypt) {
         const { key, ciphertext } = await genAndEncrypt(encryptionScheme, editorState.editContent)
@@ -71,6 +73,7 @@ export async function uploadPaste(
     highlightLanguage: editorState.editKind === "edit" ? editorState.editHighlightLang : undefined,
     encryptionScheme: pasteSetting.doEncrypt ? encryptionScheme : undefined,
     manageUrl: pasteSetting.manageUrl,
+    burnAfterRead: pasteSetting.burnAfterRead,
   }
 
   const contentLength = options.content.size
@@ -87,7 +90,7 @@ export async function uploadPaste(
     }
   } catch (e) {
     if (e instanceof UploadError) {
-      throw new ErrorWithTitle("Error on Upload", e.message)
+      throw new ErrorWithTitle(t.uploader.uploadTitle, e.message)
     }
     throw e
   } finally {

@@ -3,7 +3,10 @@ import { useEffect, useRef, useState, useTransition } from "react"
 import { Link } from "../components/ui/index.js"
 
 import { DarkModeToggle, useDarkModeSelection } from "../components/DarkModeToggle.js"
+import { LanguageToggle } from "../components/LanguageToggle.js"
 import { useErrorModal } from "../components/ErrorModal.js"
+import { useT } from "../i18n/LocaleContext.js"
+import { interpolate, format } from "../i18n/interpolate.js"
 import type { PasteSetting } from "../components/PasteSettingPanel.js"
 import { PanelSettingsPanel } from "../components/PasteSettingPanel.js"
 import { UploadedPanel } from "../components/UploadedPanel.js"
@@ -24,6 +27,7 @@ import { tst } from "../utils/overrides.js"
 import "../style.css"
 
 export function PasteBin({ config }: { config: Env }) {
+  const t = useT()
   const [editorState, setEditorState] = useState<PasteEditState>({
     editKind: "edit",
     editContent: "",
@@ -38,6 +42,7 @@ export function PasteBin({ config }: { config: Env }) {
     password: "",
     uploadKind: "short",
     doEncrypt: false,
+    burnAfterRead: false,
   })
 
   const [pasteResponse, setPasteResponse] = useState<PasteResponse | undefined>(undefined)
@@ -83,7 +88,7 @@ export function PasteBin({ config }: { config: Env }) {
         try {
           const headResp = await fetch(pasteUrl, { method: "HEAD" })
           if (!headResp.ok) {
-            await handleFailedResp(`Error on Fetching ${pasteUrl}`, headResp)
+            await handleFailedResp(format(t.pasteBin.errorFetching, { url: pasteUrl }), headResp)
             return
           }
           const contentType = headResp.headers.get("Content-Type")
@@ -98,7 +103,7 @@ export function PasteBin({ config }: { config: Env }) {
 
           const resp = await fetch(pasteUrl)
           if (!resp.ok) {
-            await handleFailedResp(`Error on Fetching ${pasteUrl}`, resp)
+            await handleFailedResp(format(t.pasteBin.errorFetching, { url: pasteUrl }), resp)
             return
           }
 
@@ -115,7 +120,7 @@ export function PasteBin({ config }: { config: Env }) {
             editFilename: pasteFilename,
           })
         } catch (e) {
-          handleError(`Error on Fetching ${pasteUrl}`, e as Error)
+          handleError(format(t.pasteBin.errorFetching, { url: pasteUrl }), e as Error)
         }
       })
     }
@@ -130,6 +135,7 @@ export function PasteBin({ config }: { config: Env }) {
     startUpload(async () => {
       try {
         const uploaded = await uploadPaste(
+          t,
           pasteSetting,
           editorState,
           setUploadedEncryptionKey,
@@ -141,7 +147,7 @@ export function PasteBin({ config }: { config: Env }) {
         setPasteSetting({ ...pasteSetting, uploadKind: "manage", manageUrl: uploaded.manageUrl })
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
-          handleError("Error on Uploading Paste", e as Error)
+          handleError(t.pasteBin.errorUploading, e as Error)
         }
       } finally {
         if (uploadAbortRef.current === controller) uploadAbortRef.current = null
@@ -158,14 +164,14 @@ export function PasteBin({ config }: { config: Env }) {
       try {
         const resp = await fetch(pasteSetting.manageUrl, { method: "DELETE" })
         if (resp.ok) {
-          showModal("Deleted Successfully", "It may takes 60 seconds for the deletion to propagate to the world")
+          showModal(t.pasteBin.deletedTitle, t.pasteBin.deletedBody)
           setPasteResponse(undefined)
           setPasteSetting({ ...pasteSetting, uploadKind: "short", manageUrl: "" })
         } else {
-          await handleFailedResp("Error on Delete Paste", resp)
+          await handleFailedResp(t.pasteBin.errorDeleting, resp)
         }
       } catch (e) {
-        handleError("Error on Delete Paste", e as Error)
+        handleError(t.pasteBin.errorDeleting, e as Error)
       }
     })
   }
@@ -206,27 +212,37 @@ export function PasteBin({ config }: { config: Env }) {
     <div className="mx-4 lg:px-4 lg:mx-0">
       <div className="mt-8 mb-4 flex items-center justify-between">
         <h1 className="text-3xl">{config.INDEX_PAGE_TITLE}</h1>
-        <DarkModeToggle modeSelection={modeSelection} setModeSelection={setModeSelection} />
+        <div className="flex flex-row gap-1 items-center">
+          <LanguageToggle />
+          <DarkModeToggle modeSelection={modeSelection} setModeSelection={setModeSelection} />
+        </div>
       </div>
-      <p className="my-2">A pastebin running on Cloudflare Workers.</p>
+      <p className="my-2">{t.pasteBin.tagline}</p>
       <p className="my-2">
-        <b>Usage</b>: paste text or drop a file, then share the returned URL. You can also use{" "}
-        <Link className={tst} href={`${config.DEPLOY_URL}/doc/curl`}>
-          curl
-        </Link>
-        {", the "}
-        <Link className={tst} href={`${config.DEPLOY_URL}/doc/api`}>
-          HTTP API
-        </Link>
-        {", or as an "}
-        <Link className={tst} href={`${config.DEPLOY_URL}/doc/skill.md`}>
-          AI agent skill
-        </Link>
-        .
+        <b>{t.pasteBin.usageLabel}</b>
+        {": "}
+        {interpolate(t.pasteBin.usage, {
+          curl: (
+            <Link className={tst} href={`${config.DEPLOY_URL}/doc/curl`}>
+              {t.pasteBin.usageCurl}
+            </Link>
+          ),
+          api: (
+            <Link className={tst} href={`${config.DEPLOY_URL}/doc/api`}>
+              {t.pasteBin.usageApi}
+            </Link>
+          ),
+          skill: (
+            <Link className={tst} href={`${config.DEPLOY_URL}/doc/skill.md`}>
+              {t.pasteBin.usageSkill}
+            </Link>
+          ),
+        })}
       </p>
       <p className="my-2">
-        <b>Warning</b>: Only for temporary share <b>(max {getMaxExpirationReadable(config)})</b>. Files could be deleted
-        without notice!
+        <b>{t.pasteBin.warningLabel}</b>
+        {": "}
+        {interpolate(t.pasteBin.warning, { max: <b>{getMaxExpirationReadable(config)}</b> })}
       </p>
     </div>
   )
@@ -246,11 +262,11 @@ export function PasteBin({ config }: { config: Env }) {
   const submitter = (
     <div className="flex flex-row items-stretch">
       <button type="button" onClick={onStartUpload} disabled={uploadDisabled} className={uploadClass}>
-        {isManageMode ? "Update" : "Upload"}
+        {isManageMode ? t.pasteBin.update : t.pasteBin.upload}
       </button>
       {isManageMode && (
         <button type="button" onClick={onStartDelete} disabled={deleteDisabled} className={deleteClass}>
-          Delete
+          {t.pasteBin.delete}
         </button>
       )}
     </div>
@@ -260,11 +276,11 @@ export function PasteBin({ config }: { config: Env }) {
     <footer className="px-3 my-4 text-center">
       <p>
         <Link href={`${config.DEPLOY_URL}/doc/tos`} className={`d-inline-block ${tst}`}>
-          Terms & Conditions
+          {t.pasteBin.termsAndConditions}
         </Link>
         {" / "}
         <Link href={config.REPO} className={`d-inline-block ${tst}`}>
-          Repository
+          {t.pasteBin.repository}
         </Link>
       </p>
     </footer>

@@ -9,7 +9,7 @@ import { getPaste, getPasteMetadata, metaResponseFromMetadata } from "../storage
 import { parsePath } from "../../shared/parsers.js"
 import { MAX_URL_REDIRECT_LEN } from "../../shared/constants.js"
 import manifest from "../../dist/frontend/.vite/ssr-manifest.json"
-import { getAssetPaths, renderCssLinks, DARK_MODE_SCRIPT } from "../ssrUtils.js"
+import { getAssetPaths, renderCssLinks, DARK_MODE_SCRIPT, FONT_LINK_TAGS } from "../ssrUtils.js"
 
 type Headers = Record<string, string>
 
@@ -89,11 +89,12 @@ async function handleStaticPages(request: Request, env: Env, _: ExecutionContext
     // Try SSR
     try {
       const { renderIndexPage } = await import("../pages/index.js")
-      const page = await renderIndexPage(env, url.pathname)
+      const page = await renderIndexPage(env, url.pathname, request.headers.get("Accept-Language"))
       if (page) {
         return new Response(page, {
           headers: {
             "Content-Type": "text/html;charset=UTF-8",
+            Vary: "Accept-Language",
             ...staticPageCacheHeader(env),
           },
         })
@@ -111,9 +112,10 @@ async function handleStaticPages(request: Request, env: Env, _: ExecutionContext
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="/favicon.ico" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escapeHtml(env.INDEX_PAGE_TITLE)}</title>
+${FONT_LINK_TAGS}
 ${renderCssLinks(cssPaths)}
 <script>
 ${DARK_MODE_SCRIPT}
@@ -135,7 +137,7 @@ ${DARK_MODE_SCRIPT}
   }
 
   // Handle other static assets
-  if (path.startsWith("/assets/") || path === "/favicon.ico") {
+  if (path.startsWith("/assets/") || path === "/favicon.ico" || path === "/favicon.svg") {
     const assetsUrl = url
     assetsUrl.pathname = path
     const resp = await env.ASSETS.fetch(assetsUrl)
@@ -194,8 +196,12 @@ export async function handleGet(request: Request, env: Env, ctx: ExecutionContex
   // when isHead, no need to get paste unless "u"
   const shouldGetPasteContent = (!isHead && role !== "m") || (isHead && role === "u")
 
+  // Burn-after-read only fires for a request that actually hands the paste body to a
+  // reader — never for HEAD (no body is sent) or metadata-only ("m") requests.
+  const consumesBurnAfterRead = shouldGetPasteContent && !isHead
+
   const item: PasteWithMetadata | null = shouldGetPasteContent
-    ? await getPaste(env, name, ctx)
+    ? await getPaste(env, name, ctx, consumesBurnAfterRead)
     : await getPasteWithoutContent(env, name)
 
   // when paste is not found
@@ -278,11 +284,20 @@ export async function handleGet(request: Request, env: Env, ctx: ExecutionContex
   if (role === "d") {
     try {
       const { renderDisplayPage } = await import("../pages/display.js")
-      const page = await renderDisplayPage(env, name, filename, ext, item.paste, item.metadata)
+      const page = await renderDisplayPage(
+        env,
+        name,
+        filename,
+        ext,
+        item.paste,
+        item.metadata,
+        request.headers.get("Accept-Language"),
+      )
       if (page) {
         return new Response(isHead ? null : page, {
           headers: {
             "Content-Type": `text/html;charset=UTF-8`,
+            Vary: "Accept-Language",
             ...pasteCacheHeader(env),
             ...lastModifiedHeader(item.metadata),
           },

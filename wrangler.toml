@@ -1,4 +1,4 @@
-name = "pb"
+name = "kagit"
 compatibility_date = "2025-04-24"
 
 workers_dev = false
@@ -28,32 +28,32 @@ enabled = true
 
 [[routes]]
 # Refer to https://developers.cloudflare.com/workers/wrangler/configuration/#routes
-pattern = "shz.al"
+pattern = "kagit.org"
 custom_domain = true
 
 [[kv_namespaces]]
 binding = "PB"  # do not touch this
-id = "435f8959b9de485ea48751ba557d90f5"  # id of your KV namespace
+id = "5158d05c6705493f9ed01a607aff3e5f"  # id of your KV namespace
 
 [[r2_buckets]]
 binding = "R2"  # do not touch this
-bucket_name = "pb-shz-al"  # bucket name of your R2 bucket
+bucket_name = "kagit-pastes"  # bucket name of your R2 bucket
 
 [vars]
 # must be consistent with your routes
-DEPLOY_URL = "https://shz.al"
+DEPLOY_URL = "https://kagit.org"
 
 # url to repo, displayed in the index page
-REPO = "https://github.com/SharzyL/pastebin-worker"
+REPO = "https://github.com/bucagdas/pastebin-worker"
 
 # the page title displayed in index page
-INDEX_PAGE_TITLE = "Pastebin Worker"
+INDEX_PAGE_TITLE = "Kağıt"
 
 # the name displayed in TOS
-TOS_MAINTAINER = "Sharzy"
+TOS_MAINTAINER = "Kağıt"
 
 # the email displayed in TOS
-TOS_MAIL = "pb@shz.al"
+TOS_MAIL = "merhaba@kagit.org"
 
 # Cache-Control max-age for static pages
 CACHE_STATIC_PAGE_AGE = 7200

@@ -114,6 +114,7 @@ export async function handlePostOrPut(
   const expireFromForm: string | undefined = parts.get("e")?.contentAsString()
   const encryptionScheme: string | undefined = parts.get("encryption-scheme")?.contentAsString()
   const highlightLanguage = parts.get("lang")?.contentAsString()
+  const burnAfterRead = parts.has("b")
   const expire = expireFromForm ? expireFromForm : env.DEFAULT_EXPIRATION
 
   const uploadedParts = isMPUComplete ? (JSON.parse(contentAsString()) as R2UploadedPart[]) : undefined
@@ -197,6 +198,7 @@ export async function handlePostOrPut(
       filename,
       highlightLanguage,
       encryptionScheme,
+      burnAfterRead,
       isMPUComplete,
     })
     return makeResponse(
@@ -236,6 +238,7 @@ export async function handlePostOrPut(
       highlightLanguage,
       contentLength: r2Object?.size || contentLength,
       encryptionScheme,
+      burnAfterRead,
       isMPUComplete,
     })
 

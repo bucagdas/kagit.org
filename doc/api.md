@@ -124,7 +124,7 @@ alert("Script should be removed")
 - A2
 - B
 
-![Panty](https://shz.al/~panty.jpg)
+![Panty](https://kagit.org/~panty.jpg)
 
 1. first
 2. second
@@ -144,7 +144,7 @@ Request a paste without returning the body. It accepts same parameters as all `G
 
 Upload your paste. It accept parameters in form-data:
 
-- `c`: mandatory. The **content** of your paste, text or binary. The maximum allowed size is set by the deployment (`R2_MAX_ALLOWED`). The `filename` in its `Content-Disposition` will be present when fetching the paste. Note that a single Cloudflare Workers request body is capped at 100 MB — request bodies larger than that are rejected by the platform with HTTP `413 Payload Too Large` before the worker is invoked. For larger files, use the official web UI at `/` or the [`pb`](https://github.com/SharzyL/pastebin-worker/tree/goshujin/scripts) CLI, which transparently chunk the content via the multipart-upload endpoints.
+- `c`: mandatory. The **content** of your paste, text or binary. The maximum allowed size is set by the deployment (`R2_MAX_ALLOWED`). The `filename` in its `Content-Disposition` will be present when fetching the paste. Note that a single Cloudflare Workers request body is capped at 100 MB — request bodies larger than that are rejected by the platform with HTTP `413 Payload Too Large` before the worker is invoked. For larger files, use the official web UI at `/` or the [`pb`](https://github.com/bucagdas/pastebin-worker/tree/goshujin/scripts) CLI, which transparently chunk the content via the multipart-upload endpoints.
 
 - `e`: optional. The **expiration** time of the paste. After this period of time, the paste is permanently deleted. It should be an integer or a float point number suffixed with an optional unit (seconds by default). Supported units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days). For example, `360.25` means 360.25 seconds, and `25d` means 25 days. The actual expiration might be shorter than specified expiration due to limitations imposed by the administrator. If unspecified, a default expiration time setting is used.
 
@@ -162,8 +162,8 @@ Upload your paste. It accept parameters in form-data:
 
 ```json
 {
-  "url": "https://shz.al/abcd",
-  "manageUrl": "https://shz.al/abcd:w2eHqyZGc@CQzWLN=BiJiQxZ",
+  "url": "https://kagit.org/abcd",
+  "manageUrl": "https://kagit.org/abcd:w2eHqyZGc@CQzWLN=BiJiQxZ",
   "expirationSeconds": 1209600,
   "lastModifiedAt": "2025-05-01T10:33:06.114Z",
   "createdAt": "2025-05-01T10:33:06.114Z",
@@ -178,7 +178,7 @@ Upload your paste. It accept parameters in form-data:
 
 Explanation of the fields:
 
-- `url`: String. The URL to fetch the paste. When using a customized name, it looks like `https://shz.al/~myname`.
+- `url`: String. The URL to fetch the paste. When using a customized name, it looks like `https://kagit.org/~myname`.
 - `manageUrl`: String. The URL to update and delete the paste, which is `url` suffixed by `:` and the password.
 - `expirationSeconds`: Number. The expiration seconds.
 

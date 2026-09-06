@@ -1,13 +1,15 @@
 import { renderToReadableStream } from "react-dom/server.edge"
 import React from "react"
 import { DisplayPasteView } from "../../frontend/pages/DisplayPasteView.js"
+import { LocaleProvider } from "../../frontend/i18n/LocaleContext.js"
+import { resolveLocaleFromAcceptLanguage } from "../../shared/i18n/locales.js"
 import type { PasteMetadata } from "../storage/storage.js"
 import { metaResponseFromMetadata } from "../storage/storage.js"
 import type { SerializedPasteData } from "../../shared/interfaces.js"
 import { decode, escapeHtml } from "../common.js"
 import manifest from "../../dist/frontend/.vite/ssr-manifest.json"
 import { detectUtf8 } from "../../shared/encoding.js"
-import { getAssetPaths, renderCssLinks, DARK_MODE_SCRIPT, MAX_SSR_FILE_SIZE } from "../ssrUtils.js"
+import { getAssetPaths, renderCssLinks, DARK_MODE_SCRIPT, FONT_LINK_TAGS, MAX_SSR_FILE_SIZE } from "../ssrUtils.js"
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
@@ -43,11 +45,14 @@ export async function renderDisplayPage(
   urlExt: string | undefined,
   paste: ArrayBuffer | ReadableStream<Uint8Array>,
   metadata: PasteMetadata,
+  acceptLanguage: string | null,
 ): Promise<string | null> {
   // Skip SSR for encrypted files (client needs hash key to decrypt)
   if (metadata.encryptionScheme) {
     return null
   }
+
+  const locale = resolveLocaleFromAcceptLanguage(acceptLanguage)
 
   // Skip SSR for large files (>1MB) to avoid memory/CPU overhead
   if (metadata.sizeBytes > MAX_SSR_FILE_SIZE) {
@@ -87,22 +92,25 @@ export async function renderDisplayPage(
   const reactElement = React.createElement(
     React.StrictMode,
     null,
-    React.createElement(DisplayPasteView, {
-      pasteFile,
-      pasteContentBuffer: new Uint8Array(content),
-      pasteLang: metadata.highlightLanguage,
-      isFileBinary: isBinary,
-      guessedEncoding: encoding,
-      isDecrypted: "not encrypted",
-      forceShowBinary: false,
-      setForceShowBinary: () => {
-        // SSR: no-op
-      },
-      isLoading: false,
-      name,
-      ext: urlExt,
-      filename: urlFilename,
-      config,
+    React.createElement(LocaleProvider, {
+      initialLocale: locale,
+      children: React.createElement(DisplayPasteView, {
+        pasteFile,
+        pasteContentBuffer: new Uint8Array(content),
+        pasteLang: metadata.highlightLanguage,
+        isFileBinary: isBinary,
+        guessedEncoding: encoding,
+        isDecrypted: "not encrypted",
+        forceShowBinary: false,
+        setForceShowBinary: () => {
+          // SSR: no-op
+        },
+        isLoading: false,
+        name,
+        ext: urlExt,
+        filename: urlFilename,
+        config,
+      }),
     }),
   )
 
@@ -118,12 +126,13 @@ export async function renderDisplayPage(
   const { jsFile, cssPaths } = getAssetPaths(manifest, "display.html")
 
   return `<!doctype html>
-<html lang="en">
+<html lang="${locale}">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="/favicon.ico" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${escapeHtml(env.INDEX_PAGE_TITLE)} / ${escapeHtml(titleName)}</title>
+${FONT_LINK_TAGS}
 ${renderCssLinks(cssPaths)}
 <script>
 ${DARK_MODE_SCRIPT}

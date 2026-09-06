@@ -6,6 +6,8 @@ import { MAX_AUTO_FETCH_BYTES } from "../../shared/constants.js"
 import { detectUtf8 } from "../../shared/encoding.js"
 import type { EncryptionScheme } from "../utils/encryption.js"
 import { decodeKey, decrypt } from "../utils/encryption.js"
+import { useT } from "../i18n/LocaleContext.js"
+import { format } from "../i18n/interpolate.js"
 
 import "../style.css"
 import "../styles/highlight-theme-light.css"
@@ -33,6 +35,7 @@ export function DisplayPaste({ config }: { config: Env }) {
   const [metaFilename, setMetaFilename] = useState<string | undefined>(undefined)
 
   const { ErrorModal, showModal, handleFailedResp } = useErrorModal()
+  const t = useT()
   const url = new URL(location.toString())
   const { name, ext, filename } = parsePath(url.pathname)
   const pasteUrl = `/${name}`
@@ -44,7 +47,7 @@ export function DisplayPaste({ config }: { config: Env }) {
     try {
       const resp = await fetch(pasteUrl)
       if (!resp.ok) {
-        await handleFailedResp("Failed to Fetch Paste", resp)
+        await handleFailedResp(t.display.errorFetchingFailed, resp)
         return
       }
       const scheme: EncryptionScheme | null = resp.headers.get("X-PB-Encryption-Scheme") as EncryptionScheme | null
@@ -79,16 +82,12 @@ export function DisplayPaste({ config }: { config: Env }) {
         try {
           key = await decodeKey(scheme, keyString)
         } catch (err) {
-          showModal("Invalid decryption key", (err as Error).message)
+          showModal(t.display.invalidKeyTitle, (err as Error).message)
           return
         }
         const decrypted = await decrypt(scheme, key, respBytes)
         if (!decrypted) {
-          showModal(
-            "Decryption failed",
-            "Could not decrypt the paste with the provided key. The URL fragment may be wrong, " +
-              "or the paste has been replaced or corrupted.",
-          )
+          showModal(t.display.decryptFailedTitle, t.display.decryptFailedBody)
           return
         }
         setPasteFile(new File([decrypted as BlobPart], inferredFilename || name, { type: blobMime }))
@@ -99,7 +98,7 @@ export function DisplayPaste({ config }: { config: Env }) {
         setGuessedEncoding(encoding)
       }
     } catch (e) {
-      showModal(`Error on fetching ${pasteUrl}`, (e as Error).toString())
+      showModal(format(t.display.errorFetching, { url: pasteUrl }), (e as Error).toString())
       console.error(e)
     } finally {
       setIsLoading(false)
@@ -130,7 +129,7 @@ export function DisplayPaste({ config }: { config: Env }) {
       try {
         const headResp = await fetch(pasteUrl, { method: "HEAD" })
         if (!headResp.ok) {
-          await handleFailedResp(`Error on Fetching ${pasteUrl}`, headResp)
+          await handleFailedResp(format(t.display.errorFetching, { url: pasteUrl }), headResp)
           return
         }
         const contentType = headResp.headers.get("Content-Type")
@@ -184,7 +183,7 @@ export function DisplayPaste({ config }: { config: Env }) {
           contentType: effectiveContentType,
         })
       } catch (e) {
-        showModal(`Error on Fetching ${pasteUrl}`, (e as Error).toString())
+        showModal(format(t.display.errorFetching, { url: pasteUrl }), (e as Error).toString())
         console.error(e)
       } finally {
         setIsLoading(false)

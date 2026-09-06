@@ -3,7 +3,7 @@ name: shz-al
 description: Upload, fetch, update, or delete text/binary content via {{BASE_URL}}, a curl-friendly pastebin. Use when you need a quick public URL for sharing long output, hosting a small file, shortening a URL, or rendering markdown as HTML.
 ---
 
-# shz.al
+# kagit.org
 
 A pastebin hosted on Cloudflare Workers at `{{BASE_URL}}`. Every operation is
 plain HTTP and works with `curl`. Random paste names appear bare (e.g. `abcd`);
@@ -76,7 +76,7 @@ curl -X DELETE                   <manageUrl>
   HTTP `413 Payload Too Large` back, returned by the platform before the
   worker runs). Files larger than 100 MB therefore cannot be sent via a
   single `curl -Fc=@…` — use the web UI at `{{BASE_URL}}` or the `pb` CLI
-  (see [scripts/](https://github.com/SharzyL/pastebin-worker/tree/goshujin/scripts)),
+  (see [scripts/](https://github.com/bucagdas/pastebin-worker/tree/goshujin/scripts)),
   both of which split large files automatically.
 - Treat the service as ephemeral storage — do not rely on it for archival.
 

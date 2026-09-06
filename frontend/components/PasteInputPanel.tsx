@@ -6,6 +6,8 @@ import { formatSize, verifyFileSize } from "../utils/utils.js"
 import { XIcon } from "./icons.js"
 import { cardOverrides, tst } from "../utils/overrides.js"
 import { CodeEditor } from "./CodeEditor.js"
+import { useT } from "../i18n/LocaleContext.js"
+import { format } from "../i18n/interpolate.js"
 
 export type EditKind = "edit" | "file"
 
@@ -33,6 +35,7 @@ export function PasteInputPanel({
   showModal,
   ...rest
 }: PasteEditorProps) {
+  const t = useT()
   const fileInput = useRef<HTMLInputElement>(null)
   const [isDragged, setDragged] = useState<boolean>(false)
   const [isEditDragged, setEditDragged] = useState<boolean>(false)
@@ -41,7 +44,7 @@ export function PasteInputPanel({
     if (file) {
       const [ok, msg] = verifyFileSize(file.size, config)
       if (!ok) {
-        showModal("File too large", msg)
+        showModal(t.input.fileTooLargeTitle, msg)
         // also reset the underlying input so picking the same file again re-triggers onChange
         if (fileInput.current) fileInput.current.value = ""
         return
@@ -67,7 +70,7 @@ export function PasteInputPanel({
   }
 
   return (
-    <Card aria-label="Pastebin editor panel" classNames={cardOverrides} {...rest}>
+    <Card aria-label={t.input.ariaLabel} classNames={cardOverrides} {...rest}>
       <CardBody className={"relative"}>
         <input
           type="file"
@@ -95,7 +98,7 @@ export function PasteInputPanel({
           }}
         >
           {/*Possibly a bug of chrome, but Tab sometimes has a transient unexpected scrollbar when resizing*/}
-          <Tab key={"edit"} title="Edit" className={"overflow-hidden"}>
+          <Tab key={"edit"} title={t.input.tabEdit} className={"overflow-hidden"}>
             <div
               className="relative"
               onDrop={onDrop}
@@ -121,7 +124,7 @@ export function PasteInputPanel({
                 filename={state.editFilename}
                 setFilename={(name) => onStateChange({ ...state, editFilename: name })}
                 disabled={isPasteLoading}
-                placeholder={isPasteLoading ? "Loading..." : "Edit your paste here"}
+                placeholder={isPasteLoading ? t.common.loading : t.input.editPlaceholder}
               />
               {isEditDragged && (
                 <div
@@ -131,20 +134,20 @@ export function PasteInputPanel({
                   }
                   aria-hidden="true"
                 >
-                  <div className="text-2xl my-2 font-bold">Drop file here</div>
-                  <p className="text-1xl text-foreground-500">Release to upload as file</p>
+                  <div className="text-2xl my-2 font-bold">{t.input.dropHere}</div>
+                  <p className="text-1xl text-foreground-500">{t.input.releaseToUpload}</p>
                 </div>
               )}
             </div>
           </Tab>
-          <Tab key="file" title="File">
+          <Tab key="file" title={t.input.tabFile}>
             <div
               className={
                 `w-full h-[20rem] rounded-xl flex flex-col items-center justify-center cursor-pointer relative ${tst}` +
                 (isDragged ? " bg-primary-100" : " bg-primary-50")
               }
               role="button"
-              aria-label="Select file"
+              aria-label={t.input.selectFileAria}
               onDrop={onDrop}
               onDragEnter={() => setDragged(true)}
               onDragLeave={() => setDragged(false)}
@@ -155,18 +158,18 @@ export function PasteInputPanel({
               onClick={() => fileInput.current?.click()}
             >
               <div className="text-2xl my-2 font-bold px-4 text-center break-all">
-                {state.file !== null ? state.file.name : "Select File"}
+                {state.file !== null ? state.file.name : t.input.selectFile}
               </div>
               <p className={`text-1xl text-foreground-500 ${tst} relative`}>
                 <span>
                   {state.file !== null
-                    ? `${formatSize(state.file.size)} · Click or drag to replace`
-                    : "Click or drag & drop file here"}
+                    ? format(t.input.replaceHint, { size: formatSize(state.file.size) })
+                    : t.input.dropHint}
                 </span>
               </p>
               {state.file && (
                 <XIcon
-                  aria-label="Remove file"
+                  aria-label={t.input.removeFileAria}
                   role="button"
                   className={`h-6 inline absolute top-2 right-2 text-red-400 ${tst}`}
                   onClick={(e) => {

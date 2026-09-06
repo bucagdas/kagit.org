@@ -76,6 +76,8 @@ interface MyComponentProps extends ButtonProps {
 }
 
 export function DarkModeToggle({ modeSelection, setModeSelection, className, ...rest }: MyComponentProps) {
+  // Same element tree on every render, mounted or not — see the comment on LanguageToggle
+  // for why branching to a different subtree here caused a production hydration mismatch.
   const [mounted, setMounted] = useState(false)
   const t = useT()
 
@@ -90,22 +92,6 @@ export function DarkModeToggle({ modeSelection, setModeSelection, className, ...
     dark: t.common.modeDark,
   }
 
-  if (!mounted) {
-    return (
-      <Button
-        isIconOnly
-        size="sm"
-        variant="light"
-        className={`${tst}` + " " + className}
-        aria-label={t.common.toggleDarkModeAria}
-        style={{ visibility: "hidden" }}
-        {...rest}
-      >
-        {icons.system}
-      </Button>
-    )
-  }
-
   return (
     <Tooltip content={format(t.common.toggleDarkMode, { mode: modeLabels[currentMode] })}>
       <Button
@@ -115,12 +101,14 @@ export function DarkModeToggle({ modeSelection, setModeSelection, className, ...
         className={`${tst}` + " " + className}
         aria-label={t.common.toggleDarkModeAria}
         onPress={() => {
+          if (!mounted) return
           const newSelected = modeSelections[(modeSelections.indexOf(currentMode) + 1) % modeSelections.length]
           setModeSelection(newSelected)
         }}
+        style={mounted ? undefined : { visibility: "hidden" }}
         {...rest}
       >
-        {icons[currentMode]}
+        {mounted ? icons[currentMode] : icons.system}
       </Button>
     </Tooltip>
   )

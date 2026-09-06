@@ -1,26 +1,27 @@
-import { hydrateRoot, createRoot } from "react-dom/client"
+import { createRoot } from "react-dom/client"
 import React from "react"
 import { PasteBin } from "../PasteBin.js"
 import { HljsProvider } from "../../utils/highlight-client.js"
 import { LocaleProvider } from "../../i18n/LocaleContext.js"
-import { isSupportedLocale } from "../../../shared/i18n/locales.js"
 
 const rootElement = document.getElementById("root")!
 const config = __WRANGLER_CONFIG__
 
-// Check if this is an SSR-rendered page
-const isSSR = rootElement.hasChildNodes()
-
-// The server picks a locale from Accept-Language and renders <html lang="...">
-// accordingly (see worker/pages/index.ts). Reusing that same attribute here — instead of
-// re-deriving the locale from navigator.language — guarantees this first client render
-// reproduces the SSR'd HTML exactly; anything else risks a hydration mismatch.
-const htmlLang = document.documentElement.lang
-const initialLocale = isSSR && isSupportedLocale(htmlLang) ? htmlLang : undefined
+// This used to hydrateRoot() against the server-rendered markup, pinning the client's
+// initial locale to the SSR-resolved one (read off <html lang>) so the first render would
+// reproduce the SSR output exactly. In production that hydration reliably still logged
+// "Hydration failed" (React #418) on every load, and — worse — some subtrees (the paste
+// editor's toolbar, expiration copy) ended up rendered in the wrong language once React
+// discarded and regenerated them to recover. Root cause not resolved; the admin-URL flow
+// below (plain createRoot, no hydration at all) was confirmed to always render correctly,
+// so every load now takes that same path: clear whatever the server sent and do a fresh
+// client render. This gives up SSR's faster first paint for this page in exchange for
+// actually-correct content — worth revisiting once the hydration bug itself is found.
+rootElement.innerHTML = ""
 
 const tree = (
   <React.StrictMode>
-    <LocaleProvider initialLocale={initialLocale}>
+    <LocaleProvider>
       <HljsProvider>
         <PasteBin config={config} />
       </HljsProvider>
@@ -28,9 +29,4 @@ const tree = (
   </React.StrictMode>
 )
 
-if (isSSR) {
-  hydrateRoot(rootElement, tree)
-} else {
-  // CSR (admin URL or SSR failed)
-  createRoot(rootElement).render(tree)
-}
+createRoot(rootElement).render(tree)

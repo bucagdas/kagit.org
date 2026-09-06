@@ -1,4 +1,6 @@
 import { PASSWD_SEP } from "./constants.js"
+import type { Messages } from "../frontend/i18n/translations/en.js"
+import { formatDurationUnit } from "./i18n/duration.js"
 
 export class ParseError extends Error {
   constructor(msg: string) {
@@ -36,7 +38,10 @@ export function parseExpiration(expirationStr: string): number | null {
   return expirationSeconds
 }
 
-export function parseExpirationReadable(expirationStr: string): string | null {
+// `t` is optional and omitted by backend/API callers (worker/handlers/handleWrite.ts's error
+// responses stay English, matching doc/api.md) — only the frontend UI passes it, to localize
+// the same reading for on-page hints.
+export function parseExpirationReadable(expirationStr: string, t?: Messages): string | null {
   expirationStr = expirationStr.trim()
   const EXPIRE_REGEX = /^\d+(\.\d+)?\s*[smhd]?$/
   if (!EXPIRE_REGEX.test(expirationStr)) {
@@ -45,10 +50,9 @@ export function parseExpirationReadable(expirationStr: string): string | null {
 
   const num = parseFloat(expirationStr)
   const lastChar = expirationStr[expirationStr.length - 1]
-  if (lastChar === "m") return `${num} minute${num > 1 ? "s" : ""}`
-  else if (lastChar === "h") return `${num} hour${num > 1 ? "s" : ""}`
-  else if (lastChar === "d") return `${num} day${num > 1 ? "s" : ""}`
-  return `${num} second${num > 1 ? "s" : ""}`
+  const unit = lastChar === "m" ? "minute" : lastChar === "h" ? "hour" : lastChar === "d" ? "day" : "second"
+  if (t) return formatDurationUnit(t, num, unit)
+  return `${num} ${unit}${num > 1 ? "s" : ""}`
 }
 
 export interface ParsedPath {

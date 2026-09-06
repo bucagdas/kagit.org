@@ -77,7 +77,7 @@ interface CustomNameUI {
 }
 
 function customNameUI(t: Messages, name: string, availability: NameAvailability): CustomNameUI {
-  const [ok, msg] = verifyName(name)
+  const [ok, msg] = verifyName(name, t)
   if (!ok) return { isInvalid: true, errorMessage: msg, endContent: null }
 
   switch (availability.status) {
@@ -138,9 +138,9 @@ export function PanelSettingsPanel({
             value={setting.expiration}
             isRequired
             onValueChange={(e) => onSettingChange({ ...setting, expiration: e })}
-            isInvalid={!verifyExpiration(setting.expiration, config)[0]}
-            errorMessage={verifyExpiration(setting.expiration, config)[1]}
-            description={verifyExpiration(setting.expiration, config)[1]}
+            isInvalid={!verifyExpiration(setting.expiration, config, t)[0]}
+            errorMessage={verifyExpiration(setting.expiration, config, t)[1]}
+            description={verifyExpiration(setting.expiration, config, t)[1]}
           />
           <Input
             type="password"
@@ -164,17 +164,17 @@ export function PanelSettingsPanel({
               ...inputOverrides,
             }}
             placeholder={t.settings.passwordPlaceholder}
-            isInvalid={!verifyPassword(setting.password)[0]}
-            errorMessage={verifyPassword(setting.password)[1]}
+            isInvalid={!verifyPassword(setting.password, t)[0]}
+            errorMessage={verifyPassword(setting.password, t)[1]}
           />
         </div>
         <Divider className={`my-4 ${tst}`} />
         <div className="pl-1">
           <div className="flex flex-row items-center flex-wrap gap-x-2 gap-y-2 text-sm">
-            <span className="text-default-700">{t.settings.use}</span>
+            <span className="text-default-700">{t.settings.urlKindLabel}</span>
             <div
               role="radiogroup"
-              aria-label="URL kind"
+              aria-label={t.settings.urlKindAria}
               className="inline-flex rounded-lg border border-default-200 bg-default-100"
             >
               {urlKindOpts.map((opt, idx) => {
@@ -213,7 +213,6 @@ export function PanelSettingsPanel({
                 )
               })}
             </div>
-            <span className="text-default-700">{t.settings.url}</span>
           </div>
 
           {setting.uploadKind === "custom" &&
@@ -245,8 +244,8 @@ export function PanelSettingsPanel({
               onValueChange={(m) => onSettingChange({ ...setting, manageUrl: m })}
               type="text"
               className="mt-2"
-              isInvalid={!verifyManageUrl(setting.manageUrl, config)[0]}
-              errorMessage={verifyManageUrl(setting.manageUrl, config)[1]}
+              isInvalid={!verifyManageUrl(setting.manageUrl, config, t)[0]}
+              errorMessage={verifyManageUrl(setting.manageUrl, config, t)[1]}
               placeholder={t.settings.manageUrlPlaceholder}
             />
           )}

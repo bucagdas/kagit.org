@@ -19,7 +19,18 @@ export function Tooltip({ content, children }: TooltipProps) {
   const [align, setAlign] = useState<"center" | "left" | "right">("center")
   const tooltipRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const tooltipId = `tooltip-${useId()}`
+  // useId() must still be called unconditionally (rules of hooks), but its value is only
+  // ever applied to the DOM after mount. This app's SSR (react-dom/server.edge, streamed
+  // from a Worker) and its client hydration were producing different ids for the very
+  // first useId() call on the page — root cause unconfirmed, but since this id only serves
+  // aria-describedby (accessibility, not layout or behavior), deferring it sidesteps the
+  // mismatch entirely instead of depending on cross-request useId() stability here.
+  const generatedId = useId()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  const tooltipId = mounted ? `tooltip-${generatedId}` : undefined
 
   useEffect(() => {
     if (show && tooltipRef.current && containerRef.current) {

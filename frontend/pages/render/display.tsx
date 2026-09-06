@@ -1,21 +1,22 @@
-import { hydrateRoot } from "react-dom/client"
+import { createRoot } from "react-dom/client"
 import React from "react"
 import { DisplayPaste } from "../DisplayPaste.js"
 import { HljsProvider } from "../../utils/highlight-client.js"
 import { LocaleProvider } from "../../i18n/LocaleContext.js"
-import { isSupportedLocale } from "../../../shared/i18n/locales.js"
 
 const rootElement = document.getElementById("root")!
 const config = __WRANGLER_CONFIG__
 
-// See render/index.tsx: reuse the server-picked <html lang> so the first client render
-// matches the SSR'd HTML byte-for-byte and hydration doesn't warn about a text mismatch.
-const htmlLang = document.documentElement.lang
-const initialLocale = window.__PASTE_DATA__ && isSupportedLocale(htmlLang) ? htmlLang : undefined
+// See render/index.tsx for why this always does a fresh client render instead of
+// hydrateRoot(): hydrating against the SSR markup was reliably logging "Hydration failed"
+// (React #418) and sometimes left part of the tree rendered in the wrong language. Clearing
+// #root and rendering fresh sidesteps that; window.__PASTE_DATA__ (a separate embedded
+// <script>, untouched by this) still lets DisplayPaste skip its own network fetch either way.
+rootElement.innerHTML = ""
 
 const tree = (
   <React.StrictMode>
-    <LocaleProvider initialLocale={initialLocale}>
+    <LocaleProvider>
       <HljsProvider>
         <DisplayPaste config={config} />
       </HljsProvider>
@@ -23,9 +24,4 @@ const tree = (
   </React.StrictMode>
 )
 
-if (window.__PASTE_DATA__) {
-  hydrateRoot(rootElement, tree)
-} else {
-  const { createRoot } = await import("react-dom/client")
-  createRoot(rootElement).render(tree)
-}
+createRoot(rootElement).render(tree)

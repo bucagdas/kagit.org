@@ -5,6 +5,9 @@ import { Autocomplete, AutocompleteItem, Input, Select, SelectItem } from "./ui/
 import { autoCompleteOverrides, inputOverrides, selectOverrides, tst } from "../utils/overrides.js"
 import { highlightHTML, useAvailableLanguages, useHljsForLang } from "../utils/highlight.js"
 import { XIcon } from "./icons.js"
+import { useT } from "../i18n/LocaleContext.js"
+import { format } from "../i18n/interpolate.js"
+import type { Messages } from "../i18n/translations/en.js"
 
 import "../styles/highlight-theme-light.css"
 import "../styles/highlight-theme-dark.css"
@@ -25,13 +28,11 @@ interface TabSetting {
   width: 2 | 4 | 8
 }
 
-function formatTabSetting(s: TabSetting, forHuman: boolean) {
+function formatTabSetting(s: TabSetting, forHuman: false): string
+function formatTabSetting(s: TabSetting, forHuman: true, t: Messages): string
+function formatTabSetting(s: TabSetting, forHuman: boolean, t?: Messages) {
   if (forHuman) {
-    if (s.char === "tab") {
-      return `Tab: ${s.width}`
-    } else {
-      return `Spaces: ${s.width}`
-    }
+    return format(s.char === "tab" ? t!.editor.tabLabel : t!.editor.spacesLabel, { width: s.width })
   } else {
     return `${s.char} ${s.width}`
   }
@@ -74,6 +75,7 @@ export function CodeEditor({
   className,
   ...rest
 }: CodeInputProps) {
+  const t = useT()
   const refHighlighting = useRef<HTMLPreElement | null>(null)
   const refTextarea = useRef<HTMLTextAreaElement | null>(null)
   const refLineNumbers = useRef<HTMLSpanElement | null>(null)
@@ -146,8 +148,8 @@ export function CodeEditor({
           className="flex-1"
           classNames={inputOverrides}
           type={"text"}
-          label={"File name"}
-          placeholder={"No filename"}
+          label={t.editor.fileName}
+          placeholder={t.editor.noFilename}
           size={"sm"}
           value={filename || ""}
           onValueChange={setFilename}
@@ -156,7 +158,7 @@ export function CodeEditor({
         <Autocomplete
           className={"max-w-[8em]"}
           classNames={autoCompleteOverrides}
-          label={"Language"}
+          label={t.editor.language}
           size={"sm"}
           isClearable
           defaultItems={availableLanguages.map((lang) => ({ key: lang }))}
@@ -175,7 +177,7 @@ export function CodeEditor({
         <Select
           ref={refIndentWith}
           size={"sm"}
-          label={"Indent With"}
+          label={t.editor.indentWith}
           className={"w-[6em] text-foreground"}
           classNames={selectOverrides}
           selectedKeys={[formatTabSetting(tabSetting, false)]}
@@ -186,7 +188,7 @@ export function CodeEditor({
           }}
         >
           {tabSettings.map((s) => (
-            <SelectItem key={formatTabSetting(s, false)}>{formatTabSetting(s, true)}</SelectItem>
+            <SelectItem key={formatTabSetting(s, false)}>{formatTabSetting(s, true, t)}</SelectItem>
           ))}
         </Select>
       </div>
@@ -228,7 +230,7 @@ export function CodeEditor({
             onKeyDown={handleKeyDown}
             value={content}
             spellCheck={false}
-            aria-label={"Paste editor"}
+            aria-label={t.editor.pasteEditorAria}
           ></textarea>
         </div>
         {content && !disabled && (
@@ -240,7 +242,7 @@ export function CodeEditor({
             }}
             tabIndex={-1}
             className="absolute top-3 right-3 text-default-400 hover:text-default-700 transition-colors"
-            aria-label="Clear editor"
+            aria-label={t.editor.clearEditorAria}
           >
             <XIcon className="w-4 h-4" />
           </button>

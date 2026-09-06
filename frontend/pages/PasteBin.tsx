@@ -242,7 +242,7 @@ export function PasteBin({ config }: { config: Env }) {
       <p className="my-2">
         <b>{t.pasteBin.warningLabel}</b>
         {": "}
-        {interpolate(t.pasteBin.warning, { max: <b>{getMaxExpirationReadable(config)}</b> })}
+        {interpolate(t.pasteBin.warning, { max: <b>{getMaxExpirationReadable(config, t)}</b> })}
       </p>
     </div>
   )

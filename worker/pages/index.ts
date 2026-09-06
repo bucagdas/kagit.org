@@ -2,6 +2,7 @@ import { renderToReadableStream } from "react-dom/server.edge"
 import React from "react"
 import { PasteBin } from "../../frontend/pages/PasteBin.js"
 import { LocaleProvider } from "../../frontend/i18n/LocaleContext.js"
+import { HljsHookProvider, LanguagesProvider } from "../../frontend/utils/highlight.js"
 import { resolveLocaleFromAcceptLanguage } from "../../shared/i18n/locales.js"
 import { decode, escapeHtml } from "../common.js"
 import manifest from "../../dist/frontend/.vite/ssr-manifest.json"
@@ -29,10 +30,24 @@ export async function renderIndexPage(
     INDEX_PAGE_TITLE: env.INDEX_PAGE_TITLE,
   } as Env
 
+  // The client wraps the same tree in <HljsProvider> (see render/index.tsx), which nests
+  // two extra context-provider fibers (HljsHookProvider, LanguagesProvider) around PasteBin.
+  // useId()'s ids are derived from tree position, so mirroring that nesting here — even
+  // with the same no-highlighting-on-server behavior the bare default context already gave
+  // — is required for every id generated inside PasteBin to match between SSR and hydration.
   const reactElement = React.createElement(
     React.StrictMode,
     null,
-    React.createElement(LocaleProvider, { initialLocale: locale, children: React.createElement(PasteBin, { config }) }),
+    React.createElement(LocaleProvider, {
+      initialLocale: locale,
+      children: React.createElement(HljsHookProvider, {
+        value: () => undefined,
+        children: React.createElement(LanguagesProvider, {
+          value: [],
+          children: React.createElement(PasteBin, { config }),
+        }),
+      }),
+    }),
   )
 
   // Render to HTML stream

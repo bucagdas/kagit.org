@@ -1,5 +1,5 @@
 // Canonical (source-of-truth) message set. Every other locale file must satisfy this
-// exact shape — see LocaleContext.tsx, which types the dictionary record off `typeof en`.
+// exact shape; see LocaleContext.tsx, which types the dictionary record off `typeof en`.
 export const en = {
   common: {
     close: "Close",
@@ -69,8 +69,8 @@ export const en = {
     passwordHint: "Used to update/delete your paste. Randomly generated if left empty.",
     passwordHintAria: "More information about Password",
     passwordPlaceholder: "Generated randomly",
-    use: "Use",
-    url: "URL",
+    urlKindLabel: "URL type:",
+    urlKindAria: "URL kind",
     kindShort: "short",
     kindLong: "long",
     kindCustom: "custom",
@@ -96,7 +96,7 @@ export const en = {
     encryptionHintAria: "More information about client-side encryption",
     burnAfterRead: "Burn after read",
     burnAfterReadTooltip:
-      "The paste is permanently deleted right after the first successful read. Share the link only once — reloading the page, link previews, or a shared link opened by more than one person will consume it.",
+      "The paste is permanently deleted right after the first successful read. Share the link only once; reloading the page, link previews, or a shared link opened by more than one person will consume it.",
     burnAfterReadHintAria: "More information about burn after read",
   },
 
@@ -106,19 +106,19 @@ export const en = {
     displayUrl: "Display URL",
     displayUrlDesc: "Browser-friendly view with syntax highlighting.",
     displayUrlEncryptedAddendum:
-      " The decryption key sits after the {hash} in the URL and is never sent to the server — it stays in the browser for client-side decryption.",
+      " The decryption key sits after the {hash} in the URL and is never sent to the server; it stays in the browser for client-side decryption.",
     markdownUrl: "Markdown URL",
     markdownUrlDesc: "Render the paste as GitHub-flavored markdown (with code highlighting and LaTeX).",
     rawUrl: "Raw URL",
     rawUrlDescEncrypted:
-      "Returns the raw paste content — encrypted, since this paste uses client-side encryption. Decrypt it yourself with the key.",
+      "Returns the raw paste content, encrypted since this paste uses client-side encryption. Decrypt it yourself with the key.",
     rawUrlDescPlain: "Returns the raw paste content directly, with the inferred Content-Type.",
     rawFlagMime: "Override the Content-Type",
     rawFlagAttachment: "Force download (Content-Disposition: attachment)",
     rawFlagExt: "Append an extension to hint MIME type",
     rawFlagFilename: "Append a filename for the downloaded file",
     displayFlagLang: "Override syntax highlighting language",
-    displayFlagFilename: "Append a filename — shown in the header and used as the download name",
+    displayFlagFilename: "Append a filename; shown in the header and used as the download name",
     manageUrl: "Manage URL",
     manageUrlDesc: "Use this URL to update or delete the paste later. Keep it private.",
     expiration: "Expiration",
@@ -126,10 +126,47 @@ export const en = {
     cancel: "Cancel",
     more: "More",
     shortenerUrl: "Shortener URL",
-    shortenerUrlDesc: "The paste body is a URL — this endpoint redirects (302) to it.",
+    shortenerUrlDesc: "The paste body is a URL; this endpoint redirects (302) to it.",
     metadataUrl: "Metadata URL",
     metadataUrlDesc: "Get paste metadata (size, timestamps, filename, encryption scheme, ...) as JSON.",
     burnAfterReadNotice: "This paste will be deleted after its first read. The link below works once.",
+  },
+
+  validation: {
+    passwordTooShort: "Password too short ({len} < {min})",
+    passwordTooLong: "Password too long ({len} > {max})",
+    passwordNewline: "Password should not contain newlines",
+    nameTooShort: "Name should have at least 3 characters",
+    nameInvalidChars: "Name contains characters that aren't allowed",
+    invalidExpiration: "'{expiration}' is not a valid expiration specification",
+    exceedMaxExpiration: "Exceeds max expiration ({readable})",
+    expiresIn: "Expires in {readable}",
+    fileTooLarge: "File too large ({size} > {max})",
+    urlShouldStartWith: "URL should start with {url}",
+    urlShouldContainColon: "URL should contain a colon",
+    invalidUrl: "Invalid URL",
+  },
+
+  duration: {
+    secondOne: "second",
+    secondOther: "seconds",
+    minuteOne: "minute",
+    minuteOther: "minutes",
+    hourOne: "hour",
+    hourOther: "hours",
+    dayOne: "day",
+    dayOther: "days",
+  },
+
+  editor: {
+    fileName: "File name",
+    noFilename: "No filename",
+    language: "Language",
+    indentWith: "Indent With",
+    tabLabel: "Tab: {width}",
+    spacesLabel: "Spaces: {width}",
+    pasteEditorAria: "Paste editor",
+    clearEditorAria: "Clear editor",
   },
 
   uploader: {

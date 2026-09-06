@@ -42,7 +42,7 @@ export function PasteInputPanel({
 
   function setFile(file: File | null) {
     if (file) {
-      const [ok, msg] = verifyFileSize(file.size, config)
+      const [ok, msg] = verifyFileSize(file.size, config, t)
       if (!ok) {
         showModal(t.input.fileTooLargeTitle, msg)
         // also reset the underlying input so picking the same file again re-triggers onChange

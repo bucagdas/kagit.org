@@ -77,10 +77,25 @@ export function useHLJS(lang: string | undefined): HLJSApi | undefined {
 
 // Wires the real loader + language name list into the worker-safe contexts so
 // consumers reached via `useHljsForLang` / `useAvailableLanguages` get them.
+//
+// The worker SSR path (see worker/pages/index.ts) never has this provider, so
+// useAvailableLanguages() resolves to LanguagesContext's default there — an empty array.
+// ALL_LANGUAGES is a plain build-time constant with no async loading step, so providing it
+// immediately here made the client's very first (pre-hydration) render already show the
+// full ~190-language list where the server had shown none: an instant, guaranteed hydration
+// mismatch for CodeEditor's language Autocomplete on every page load. Deferring it to a
+// post-mount update (matching the "mounted" guard pattern already used for dark mode/locale)
+// makes the client's first render match the server's empty list, too.
 export function HljsProvider({ children }: { children: React.ReactNode }) {
+  const [languages, setLanguages] = useState<readonly string[]>([])
+
+  useEffect(() => {
+    setLanguages(ALL_LANGUAGES)
+  }, [])
+
   return (
     <HljsHookProvider value={useHLJS}>
-      <LanguagesProvider value={ALL_LANGUAGES}>{children}</LanguagesProvider>
+      <LanguagesProvider value={languages}>{children}</LanguagesProvider>
     </HljsHookProvider>
   )
 }

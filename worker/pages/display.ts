@@ -2,6 +2,7 @@ import { renderToReadableStream } from "react-dom/server.edge"
 import React from "react"
 import { DisplayPasteView } from "../../frontend/pages/DisplayPasteView.js"
 import { LocaleProvider } from "../../frontend/i18n/LocaleContext.js"
+import { HljsHookProvider, LanguagesProvider } from "../../frontend/utils/highlight.js"
 import { resolveLocaleFromAcceptLanguage } from "../../shared/i18n/locales.js"
 import type { PasteMetadata } from "../storage/storage.js"
 import { metaResponseFromMetadata } from "../storage/storage.js"
@@ -89,27 +90,34 @@ export async function renderDisplayPage(
     INDEX_PAGE_TITLE: env.INDEX_PAGE_TITLE,
   } as Env
 
+  // See worker/pages/index.ts for why this mirrors the client's <HljsProvider> nesting.
   const reactElement = React.createElement(
     React.StrictMode,
     null,
     React.createElement(LocaleProvider, {
       initialLocale: locale,
-      children: React.createElement(DisplayPasteView, {
-        pasteFile,
-        pasteContentBuffer: new Uint8Array(content),
-        pasteLang: metadata.highlightLanguage,
-        isFileBinary: isBinary,
-        guessedEncoding: encoding,
-        isDecrypted: "not encrypted",
-        forceShowBinary: false,
-        setForceShowBinary: () => {
-          // SSR: no-op
-        },
-        isLoading: false,
-        name,
-        ext: urlExt,
-        filename: urlFilename,
-        config,
+      children: React.createElement(HljsHookProvider, {
+        value: () => undefined,
+        children: React.createElement(LanguagesProvider, {
+          value: [],
+          children: React.createElement(DisplayPasteView, {
+            pasteFile,
+            pasteContentBuffer: new Uint8Array(content),
+            pasteLang: metadata.highlightLanguage,
+            isFileBinary: isBinary,
+            guessedEncoding: encoding,
+            isDecrypted: "not encrypted",
+            forceShowBinary: false,
+            setForceShowBinary: () => {
+              // SSR: no-op
+            },
+            isLoading: false,
+            name,
+            ext: urlExt,
+            filename: urlFilename,
+            config,
+          }),
+        }),
       }),
     }),
   )

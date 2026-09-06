@@ -11,6 +11,12 @@ type MyComponentProps = ButtonProps
 
 export function LanguageToggle({ className, ...rest }: MyComponentProps) {
   const { selection, setSelection, t } = useLocale()
+  // Same element tree on every render, mounted or not — only `style`/interactivity
+  // change. Branching to a *different* subtree per `mounted` (as an earlier version
+  // of this component and DarkModeToggle both did) shifts every later useId()-bearing
+  // node's tree position between the server's render and the client's first hydration
+  // pass, which is what produced the "Hydration failed" (React #418) React was logging
+  // on every page load in production.
   const [mounted, setMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -29,39 +35,25 @@ export function LanguageToggle({ className, ...rest }: MyComponentProps) {
   }, [isOpen])
 
   const currentLabel = selection === "system" ? t.common.langSystem : LOCALE_LABELS[selection]
-
-  if (!mounted) {
-    return (
-      <Button
-        isIconOnly
-        size="sm"
-        variant="light"
-        className={`${tst}` + " " + className}
-        aria-label={format(t.common.toggleLanguage, { lang: currentLabel })}
-        style={{ visibility: "hidden" }}
-        {...rest}
-      >
-        <GlobeIcon className="size-6" />
-      </Button>
-    )
-  }
+  const ariaLabel = format(t.common.toggleLanguage, { lang: currentLabel })
 
   return (
     <div ref={rootRef} className="relative">
-      <Tooltip content={format(t.common.toggleLanguage, { lang: currentLabel })}>
+      <Tooltip content={ariaLabel}>
         <Button
           isIconOnly
           size="sm"
           variant="light"
           className={`${tst}` + " " + className}
-          aria-label={format(t.common.toggleLanguage, { lang: currentLabel })}
-          onPress={() => setIsOpen((v) => !v)}
+          aria-label={ariaLabel}
+          onPress={() => mounted && setIsOpen((v) => !v)}
+          style={mounted ? undefined : { visibility: "hidden" }}
           {...rest}
         >
           <GlobeIcon className="size-6" />
         </Button>
       </Tooltip>
-      {isOpen && (
+      {mounted && isOpen && (
         <div
           className={`absolute right-0 z-10 mt-1 bg-content1 border border-default-200 rounded-lg shadow-medium overflow-hidden ${tst}`}
         >

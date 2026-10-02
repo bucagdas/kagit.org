@@ -3,6 +3,7 @@ import React from "react"
 import { PasteBin } from "../../frontend/pages/PasteBin.js"
 import { LocaleProvider } from "../../frontend/i18n/LocaleContext.js"
 import { HljsHookProvider, LanguagesProvider } from "../../frontend/utils/highlight.js"
+import type { Locale } from "../../shared/i18n/locales.js"
 import { resolveLocaleFromAcceptLanguage } from "../../shared/i18n/locales.js"
 import { decode } from "../common.js"
 import manifest from "../../dist/frontend/.vite/ssr-manifest.json"
@@ -13,13 +14,18 @@ export async function renderIndexPage(
   env: Env,
   pathname: string,
   acceptLanguage: string | null,
+  // Set for the /tr, /de, /az paths (see worker/handlers/handleRead.ts): that URL's locale
+  // is fixed by the path itself and must not depend on Accept-Language, or the page a search
+  // engine (or a visitor pasting the link in a different browser) sees would vary by who's
+  // asking — exactly the thing a dedicated, crawlable per-locale URL exists to avoid.
+  forcedLocale?: Locale,
 ): Promise<string | null> {
   // Admin URLs (containing password separator) skip SSR because they need client-side fetch
   if (pathname.includes(PASSWD_SEP)) {
     return null
   }
 
-  const locale = resolveLocaleFromAcceptLanguage(acceptLanguage)
+  const locale = forcedLocale ?? resolveLocaleFromAcceptLanguage(acceptLanguage)
 
   // Build React element
   const config: Env = {

@@ -13,6 +13,18 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   az: "Azərbaycanca",
 }
 
+// URL path prefix each locale is crawlable at (en stays at the root "" for backward
+// compatibility with existing links/bookmarks). Shared by the server (routing, hreflang
+// tags, sitemap) and the client (homepage language-switch links), so both always agree on
+// the same URL for a given locale — see worker/handlers/handleRead.ts, worker/ssrUtils.ts,
+// worker/pages/seo.ts, and frontend/pages/PasteBin.tsx.
+export const LOCALE_PATHS: Record<Locale, string> = {
+  en: "",
+  tr: "/tr",
+  de: "/de",
+  az: "/az",
+}
+
 export function isSupportedLocale(value: string): value is Locale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(value)
 }

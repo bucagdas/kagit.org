@@ -18,6 +18,7 @@ export const az: Messages = {
     modeLight: "açıq",
     modeDark: "qaranlıq",
     langSystem: "Sistem",
+    alsoAvailableIn: "Həmçinin bu dillərdə mövcuddur:",
   },
 
   pasteBin: {
@@ -191,5 +192,21 @@ export const az: Messages = {
     replaceHint: "{size} · Əvəz etmək üçün klikləyin və ya sürükləyin",
     dropHint: "Faylı buraya klikləyin və ya sürükləyib buraxın",
     fileTooLargeTitle: "Fayl çox böyükdür",
+  },
+
+  faq: {
+    heading: "Tez-tez verilən suallar",
+    q1: "Kağıt nədir?",
+    a1: "Kağıt — mətn, kod və faylları qısa keçidlə paylaşmağa imkan verən pulsuz, açıq mənbəli pastebin xidmətidir. Cloudflare Workers üzərində işləyir və öz domeninizdə özünüz də host edə bilərsiniz.",
+    q2: "Kağıt pulsuzdur?",
+    a2: "Bəli, Kağıt tamamilə pulsuzdur, hesab yaratmaq və ya qeydiyyatdan keçmək tələb olunmur.",
+    q3: "Paylaşılan məzmun nə qədər müddət saxlanılır?",
+    a3: "Paylaşımlar standart olaraq 7 gündən sonra silinir. Yükləmə zamanı daha qısa və ya maksimum 90 günə qədər müddət seçə bilərsiniz.",
+    q4: "Paylaşıma parol qoya və ya şifrələyə bilərəmmi?",
+    a4: "Bəli. İstəyə bağlı parol əlavə edə, əlavə olaraq client tərəfli şifrələməni aktiv edə bilərsiniz: şifrəni açma açarı yalnız keçidin URL hissəsində qalır və serverə heç vaxt göndərilmir, beləliklə məzmunu yalnız keçidin tamına sahib olanlar oxuya bilər.",
+    q5: '"Oxuduqdan sonra məhv et" (burn after read) nə edir?',
+    a5: "İlk uğurlu oxunuşdan dərhal sonra paylaşımı tamamilə silir, yəni keçid yalnız bir dəfə işləyir.",
+    q6: "Kağıt'ı komanda sətrindən və ya API ilə istifadə edə bilərəmmi?",
+    a6: "Bəli. Kağıt'ın curl ilə uyumlu HTTP API-si və kodlaşdırma köməkçilərinə birbaşa verilə bilən hazır süni intellekt agent paketi (AI agent skill) var; beləliklə terminaldan, skriptdən və ya kodlaşdırma agentindən paylaşım yükləyə, əldə edə və idarə edə bilərsiniz.",
   },
 }

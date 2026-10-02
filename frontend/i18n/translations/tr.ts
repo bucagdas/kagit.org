@@ -18,6 +18,7 @@ export const tr: Messages = {
     modeLight: "aydınlık",
     modeDark: "karanlık",
     langSystem: "Sistem",
+    alsoAvailableIn: "Şu dillerde de mevcuttur:",
   },
 
   pasteBin: {
@@ -192,5 +193,21 @@ export const tr: Messages = {
     replaceHint: "{size} · Değiştirmek için tıklayın veya sürükleyin",
     dropHint: "Dosyayı buraya tıklayın veya sürükleyip bırakın",
     fileTooLargeTitle: "Dosya çok büyük",
+  },
+
+  faq: {
+    heading: "Sıkça sorulan sorular",
+    q1: "Kağıt nedir?",
+    a1: "Kağıt; metin, kod ve dosyaları kısa bir bağlantıyla paylaşmanızı sağlayan ücretsiz, açık kaynaklı bir pastebin alternatifidir. Cloudflare Workers üzerinde çalışır ve kendi alan adınızda, kendi sunucunuzda da barındırılabilir.",
+    q2: "Kağıt ücretsiz mi?",
+    a2: "Evet, Kağıt tamamen ücretsizdir; hesap oluşturmaya veya kayıt olmaya gerek yoktur.",
+    q3: "Paylaşılan içerikler ne kadar süre saklanır?",
+    a3: "Paylaşımlar varsayılan olarak 7 gün sonra silinir. Yükleme sırasında daha kısa ya da en fazla 90 güne kadar bir süre seçebilirsiniz.",
+    q4: "Paylaşımıma parola koyabilir veya şifreleyebilir miyim?",
+    a4: "Evet. İsteğe bağlı olarak parola ekleyebilir, ayrıca istemci taraflı (client-side) şifrelemeyi açabilirsiniz: şifre çözme anahtarı yalnızca bağlantının URL parçasında kalır ve sunucuya hiç gönderilmez, böylece içeriği yalnızca bağlantının tamamına sahip olanlar okuyabilir.",
+    q5: '"Okuduktan sonra imha" (burn after read) ne işe yarar?',
+    a5: "İlk başarılı görüntülemeden hemen sonra paylaşımı kalıcı olarak siler, yani bağlantı yalnızca bir kez açılabilir.",
+    q6: "Kağıt'ı komut satırından veya API ile kullanabilir miyim?",
+    a6: "Evet. Kağıt'ın curl ile uyumlu bir HTTP API'si ve kodlama asistanlarına doğrudan verilebilecek hazır bir yapay zeka ajan paketi (AI agent skill) vardır; böylece terminalden, bir script'ten veya bir kodlama asistanından paylaşım yükleyebilir, indirebilir ve yönetebilirsiniz.",
   },
 }

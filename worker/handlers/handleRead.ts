@@ -9,7 +9,14 @@ import type { PasteMetadata, PasteWithMetadata } from "../storage/storage.js"
 import { getPaste, getPasteMetadata, metaResponseFromMetadata } from "../storage/storage.js"
 import { parsePath } from "../../shared/parsers.js"
 import { MAX_URL_REDIRECT_LEN, PASSWD_SEP } from "../../shared/constants.js"
-import { DEFAULT_LOCALE } from "../../shared/i18n/locales.js"
+import type { Locale } from "../../shared/i18n/locales.js"
+import { DEFAULT_LOCALE, LOCALE_PATHS, SUPPORTED_LOCALES } from "../../shared/i18n/locales.js"
+
+// Reverse of LOCALE_PATHS, skipping "en" (path "") since the bare "/" is handled by the
+// existing generic rewrite below, not by this lookup.
+const LOCALE_PATH_TO_LOCALE: Record<string, Locale> = Object.fromEntries(
+  SUPPORTED_LOCALES.filter((loc) => LOCALE_PATHS[loc]).map((loc) => [LOCALE_PATHS[loc], loc]),
+)
 import manifest from "../../dist/frontend/.vite/ssr-manifest.json"
 import { getAssetPaths, renderCssLinks, renderSeoHeadTags, DARK_MODE_SCRIPT, FONT_LINK_TAGS } from "../ssrUtils.js"
 
@@ -87,8 +94,17 @@ async function handleStaticPages(request: Request, env: Env, _: ExecutionContext
     })
   }
 
+  // /tr, /de, /az (with or without a trailing slash) are the crawlable, locale-fixed
+  // homepage URLs hreflang points at (see worker/ssrUtils.ts and LOCALE_PATHS) — route them
+  // to the same index-page SSR as "/", just pinning the locale instead of guessing it from
+  // Accept-Language, so the page a search engine indexes here never depends on request headers.
+  const bareUrlPath = url.pathname.length > 1 && url.pathname.endsWith("/") ? url.pathname.slice(0, -1) : url.pathname
+  const forcedLocale = LOCALE_PATH_TO_LOCALE[bareUrlPath]
+
   let path = url.pathname
-  if (path.endsWith("/")) {
+  if (forcedLocale) {
+    path = "/index.html"
+  } else if (path.endsWith("/")) {
     path += "index.html"
   } else if (path.endsWith("/index")) {
     path += ".html"
@@ -107,7 +123,7 @@ async function handleStaticPages(request: Request, env: Env, _: ExecutionContext
     // Try SSR
     try {
       const { renderIndexPage } = await import("../pages/index.js")
-      const page = await renderIndexPage(env, url.pathname, request.headers.get("Accept-Language"))
+      const page = await renderIndexPage(env, url.pathname, request.headers.get("Accept-Language"), forcedLocale)
       if (page) {
         return new Response(page, {
           headers: {

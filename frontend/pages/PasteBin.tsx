@@ -5,7 +5,8 @@ import { Link } from "../components/ui/index.js"
 import { DarkModeToggle, useDarkModeSelection } from "../components/DarkModeToggle.js"
 import { LanguageToggle } from "../components/LanguageToggle.js"
 import { useErrorModal } from "../components/ErrorModal.js"
-import { useT } from "../i18n/LocaleContext.js"
+import { useLocale, useT } from "../i18n/LocaleContext.js"
+import { LOCALE_LABELS, LOCALE_PATHS, SUPPORTED_LOCALES } from "../../shared/i18n/locales.js"
 import { interpolate, format } from "../i18n/interpolate.js"
 import type { PasteSetting } from "../components/PasteSettingPanel.js"
 import { PanelSettingsPanel } from "../components/PasteSettingPanel.js"
@@ -28,6 +29,7 @@ import "../style.css"
 
 export function PasteBin({ config }: { config: Env }) {
   const t = useT()
+  const { locale } = useLocale()
   const [editorState, setEditorState] = useState<PasteEditState>({
     editKind: "edit",
     editContent: "",
@@ -271,6 +273,44 @@ export function PasteBin({ config }: { config: Env }) {
     </div>
   )
 
+  // Real crawlable <a href> links to each locale's own URL, not just a client-side
+  // preference toggle (see LanguageToggle, which stays a same-page preference switch since
+  // it's also used on paste-display pages where navigating away would lose the paste).
+  // Search engines following these is how /tr, /de, /az actually get discovered and
+  // indexed independently of the hreflang tags in <head> and the sitemap.
+  const languageLinks = (
+    <p className="mt-2 text-sm">
+      {t.common.alsoAvailableIn}{" "}
+      {SUPPORTED_LOCALES.filter((loc) => loc !== locale).map((loc, i, arr) => (
+        <span key={loc}>
+          <Link href={`${config.DEPLOY_URL}${LOCALE_PATHS[loc]}/`} className={`d-inline-block ${tst}`}>
+            {LOCALE_LABELS[loc]}
+          </Link>
+          {i < arr.length - 1 ? " · " : ""}
+        </span>
+      ))}
+    </p>
+  )
+
+  const faq = (
+    <section className="mx-4 lg:px-4 lg:mx-0 mt-10 max-w-[48rem]" aria-labelledby="faq-heading">
+      <h2 id="faq-heading" className="text-xl font-bold mb-3">
+        {t.faq.heading}
+      </h2>
+      <dl>
+        {(["q1", "q2", "q3", "q4", "q5", "q6"] as const).map((qKey, i) => {
+          const aKey = (["a1", "a2", "a3", "a4", "a5", "a6"] as const)[i]
+          return (
+            <div key={qKey} className="mb-4">
+              <dt className="font-medium">{t.faq[qKey]}</dt>
+              <dd className="mt-1 text-foreground/80">{t.faq[aKey]}</dd>
+            </div>
+          )
+        })}
+      </dl>
+    </section>
+  )
+
   const footer = (
     <footer className="px-3 my-4 text-center">
       <p>
@@ -282,6 +322,7 @@ export function PasteBin({ config }: { config: Env }) {
           {t.pasteBin.repository}
         </Link>
       </p>
+      {languageLinks}
     </footer>
   )
 
@@ -324,6 +365,7 @@ export function PasteBin({ config }: { config: Env }) {
             />
           )}
         </div>
+        {faq}
       </div>
       {footer}
       <ErrorModal />

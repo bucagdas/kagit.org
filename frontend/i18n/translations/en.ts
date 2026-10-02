@@ -18,6 +18,7 @@ export const en = {
     modeLight: "light",
     modeDark: "dark",
     langSystem: "System",
+    alsoAvailableIn: "Also available in:",
   },
 
   pasteBin: {
@@ -190,6 +191,26 @@ export const en = {
     replaceHint: "{size} · Click or drag to replace",
     dropHint: "Click or drag & drop file here",
     fileTooLargeTitle: "File too large",
+  },
+
+  // Visible on the homepage and mirrored into FAQPage JSON-LD (see worker/ssrUtils.ts) —
+  // keep every answer factually accurate to the actual product behavior (expiration
+  // defaults, encryption model, etc.), since this text is what search engines and AI
+  // answer engines will quote verbatim.
+  faq: {
+    heading: "Frequently asked questions",
+    q1: "What is Kağıt?",
+    a1: "Kağıt is a free, open-source pastebin for sharing text, code, and files through a short link. It runs on Cloudflare Workers and is self-hostable on your own domain.",
+    q2: "Is Kağıt free to use?",
+    a2: "Yes, Kağıt is completely free, with no account or sign-up required.",
+    q3: "How long are pastes stored?",
+    a3: "Pastes expire after 7 days by default. You can choose a shorter or longer expiration, up to 90 days, when you upload.",
+    q4: "Can I password-protect or encrypt a paste?",
+    a4: "Yes. You can add a password, and separately enable client-side encryption: the decryption key stays in the URL and is never sent to the server, so only people with the full link can read the content.",
+    q5: 'What does "burn after read" do?',
+    a5: "It permanently deletes the paste right after its first successful read, so the link only works once.",
+    q6: "Can I use Kağıt from the command line or an API?",
+    a6: "Yes. Kağıt has a curl-friendly HTTP API and a packaged AI agent skill, so you can upload, fetch, and manage pastes from a terminal, a script, or a coding agent.",
   },
 } as const
 

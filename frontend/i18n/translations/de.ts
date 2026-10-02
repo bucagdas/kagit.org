@@ -18,6 +18,7 @@ export const de: Messages = {
     modeLight: "Hell",
     modeDark: "Dunkel",
     langSystem: "System",
+    alsoAvailableIn: "Auch verfügbar in:",
   },
 
   pasteBin: {
@@ -194,5 +195,21 @@ export const de: Messages = {
     replaceHint: "{size} · Klicken oder ziehen zum Ersetzen",
     dropHint: "Datei hier klicken oder per Drag & Drop ablegen",
     fileTooLargeTitle: "Datei zu groß",
+  },
+
+  faq: {
+    heading: "Häufig gestellte Fragen",
+    q1: "Was ist Kağıt?",
+    a1: "Kağıt ist ein kostenloser, quelloffener Pastebin-Dienst zum Teilen von Text, Code und Dateien über einen Kurzlink. Er läuft auf Cloudflare Workers und kann auf der eigenen Domain selbst gehostet werden.",
+    q2: "Ist Kağıt kostenlos?",
+    a2: "Ja, Kağıt ist vollständig kostenlos, ein Konto oder eine Registrierung ist nicht erforderlich.",
+    q3: "Wie lange werden Inhalte gespeichert?",
+    a3: "Inhalte laufen standardmäßig nach 7 Tagen ab. Beim Hochladen kann eine kürzere oder längere Ablaufzeit von bis zu 90 Tagen gewählt werden.",
+    q4: "Kann ich einen Beitrag mit Passwort schützen oder verschlüsseln?",
+    a4: "Ja. Es kann ein Passwort vergeben werden, und zusätzlich lässt sich clientseitige Verschlüsselung aktivieren: Der Entschlüsselungscode bleibt im URL-Fragment und wird nie an den Server gesendet, sodass nur Personen mit dem vollständigen Link den Inhalt lesen können.",
+    q5: "Was bewirkt „Löschen nach dem Lesen“ (burn after read)?",
+    a5: "Der Beitrag wird unmittelbar nach dem ersten erfolgreichen Lesen endgültig gelöscht, der Link funktioniert also nur einmal.",
+    q6: "Kann ich Kağıt über die Kommandozeile oder eine API nutzen?",
+    a6: "Ja. Kağıt bietet eine curl-freundliche HTTP-API und ein fertiges KI-Agent-Skill-Paket, mit dem sich Inhalte aus dem Terminal, einem Skript oder einem Coding-Agenten hochladen, abrufen und verwalten lassen.",
   },
 }
